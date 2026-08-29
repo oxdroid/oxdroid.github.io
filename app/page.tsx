@@ -18,10 +18,45 @@ export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  function submitAudit(event: React.FormEvent<HTMLFormElement>) {
+  async function submitAudit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setSubmitted(true)
+    setLoading(true)
+    const form = event.currentTarget
+    const formData = new FormData(form)
+    const name = formData.get('name')
+    const email = formData.get('email')
+    const message = formData.get('message')
+
+    try {
+      const res = await fetch('https://formsubmit.co/ajax/support@oxdroid.io', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          message,
+          _subject: `New Security Audit Request from ${name}`,
+          _template: 'table',
+        }),
+      })
+
+      if (res.ok) {
+        setSubmitted(true)
+      } else {
+        window.location.href = `mailto:support@oxdroid.io?subject=Security Audit Request from ${encodeURIComponent(String(name))}&body=Name: ${encodeURIComponent(String(name))}%0D%0AEmail: ${encodeURIComponent(String(email))}%0D%0AMessage: ${encodeURIComponent(String(message))}`
+        setSubmitted(true)
+      }
+    } catch {
+      window.location.href = `mailto:support@oxdroid.io?subject=Security Audit Request from ${encodeURIComponent(String(name))}&body=Name: ${encodeURIComponent(String(name))}%0D%0AEmail: ${encodeURIComponent(String(email))}%0D%0AMessage: ${encodeURIComponent(String(message))}`
+      setSubmitted(true)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -121,9 +156,9 @@ export default function Page() {
 
       <section className="pricing section-pad dark-section" id="pricing"><div className="pricing-top"><div><p className="section-kicker lime-text">Choose your depth</p><h2>Security that<br /><span>fits the sprint.</span></h2></div><p>Start small, go deep, or keep us in the room. Every engagement is tailored to your release and risk profile.</p></div><div className="plans">{plans.map((plan) => <article className={plan.featured ? 'plan plan-featured' : 'plan'} key={plan.name}><div className="plan-head"><span>{plan.name}</span>{plan.featured && <b>Most requested</b>}</div><strong>{plan.price}</strong><small>{plan.note}</small><ul>{plan.items.map((item) => <li key={item}>+ {item}</li>)}</ul><button className="plan-link" onClick={() => setModalOpen(true)}>Discuss scope <span>↗</span></button></article>)}</div></section>
 
-      <footer className="footer"><div className="footer-brand"><a className="brand" href="#top"><span className="brand-mark">ox</span>droid<span className="brand-dot">.</span></a><p>Mobile security for<br />what&apos;s next.</p></div><div className="footer-links"><div><span>Explore</span><a href="#approach">Approach</a><a href="#scope">Scope</a><a href="#pricing">Pricing</a><a href="/blogs">Journal</a></div><div><span>Say hello</span><a href="mailto:hello@oxdroid.security">hello@oxdroid.security</a><a href="https://github.com/oxdroid" target="_blank" rel="noreferrer">GitHub ↗</a><a href="https://www.linkedin.com/company/oxdroid" target="_blank" rel="noreferrer">LinkedIn ↗</a><a href="https://twitter.com/oxdroid" target="_blank" rel="noreferrer">Twitter ↗</a></div></div><div className="footer-bottom"><span>© 2026 oxdroid security lab</span><span>Built for the brave.</span></div></footer>
+      <footer className="footer"><div className="footer-brand"><a className="brand" href="#top"><span className="brand-mark">ox</span>droid<span className="brand-dot">.</span></a><p>Mobile security for<br />what&apos;s next.</p></div><div className="footer-links"><div><span>Explore</span><a href="#approach">Approach</a><a href="#scope">Scope</a><a href="#pricing">Pricing</a><a href="/blogs">Journal</a></div><div><span>Say hello</span><a href="mailto:support@oxdroid.io">support@oxdroid.io</a><a href="https://github.com/oxdroid" target="_blank" rel="noreferrer">GitHub ↗</a><a href="https://www.linkedin.com/company/oxdroid" target="_blank" rel="noreferrer">LinkedIn ↗</a><a href="https://twitter.com/oxdroid" target="_blank" rel="noreferrer">Twitter ↗</a></div></div><div className="footer-bottom"><span>© 2026 oxdroid security lab</span><span>Built for the brave.</span></div></footer>
 
-      {modalOpen && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setModalOpen(false) }}><div className="audit-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" aria-label="Close request form" onClick={() => setModalOpen(false)}>×</button>{submitted ? <div className="success-state"><span className="success-mark">✓</span><p className="section-kicker lime-text">Message received</p><h2>Let&apos;s make<br />it <span>harder.</span></h2><p>We&apos;ll be in touch shortly to understand your app, your release, and where you need signal most.</p><button className="button button-lime" onClick={() => { setModalOpen(false); setSubmitted(false) }}>Back to site</button></div> : <><p className="section-kicker lime-text">Start a conversation</p><h2 id="modal-title">Request an<br /><span>audit.</span></h2><form onSubmit={submitAudit}><label>Name<input required name="name" placeholder="Your name" /></label><label>Work email<input required type="email" name="email" placeholder="you@company.com" /></label><label>Tell us about the app<textarea required name="message" placeholder="What are you building?" rows={3} /></label><button className="button button-lime" type="submit">Send request <span>↗</span></button></form></>}</div></div>}
+      {modalOpen && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setModalOpen(false) }}><div className="audit-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" aria-label="Close request form" onClick={() => setModalOpen(false)}>×</button>{submitted ? <div className="success-state"><span className="success-mark">✓</span><p className="section-kicker lime-text">Message received</p><h2>Let&apos;s make<br />it <span>harder.</span></h2><p>We&apos;ll be in touch shortly to understand your app, your release, and where you need signal most.</p><button className="button button-lime" onClick={() => { setModalOpen(false); setSubmitted(false) }}>Back to site</button></div> : <><p className="section-kicker lime-text">Start a conversation</p><h2 id="modal-title">Request an<br /><span>audit.</span></h2><form onSubmit={submitAudit}><label>Name<input required name="name" placeholder="Your name" /></label><label>Work email<input required type="email" name="email" placeholder="you@company.com" /></label><label>Tell us about the app<textarea required name="message" placeholder="What are you building?" rows={3} /></label><button className="button button-lime" type="submit" disabled={loading}>{loading ? 'Sending request...' : <>Send request <span>↗</span></>}</button></form></>}</div></div>}
     </main>
   )
 }

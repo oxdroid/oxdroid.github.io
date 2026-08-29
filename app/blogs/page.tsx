@@ -120,7 +120,7 @@ export default function BlogsPage() {
           </div>
           <div>
             <span>Say hello</span>
-            <a href="mailto:hello@oxdroid.security">hello@oxdroid.security</a>
+            <a href="mailto:support@oxdroid.io">support@oxdroid.io</a>
             <a href="https://github.com/oxdroid" target="_blank" rel="noreferrer">GitHub ↗</a>
             <a href="https://www.linkedin.com/company/oxdroid" target="_blank" rel="noreferrer">LinkedIn ↗</a>
             <a href="https://twitter.com/oxdroid" target="_blank" rel="noreferrer">Twitter ↗</a>
