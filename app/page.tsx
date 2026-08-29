@@ -1,0 +1,126 @@
+'use client'
+
+import { useState } from 'react'
+
+const services = [
+  { number: '01', title: 'Static analysis', text: 'We inspect binaries, source, dependencies, and configurations for weaknesses before they reach production.' },
+  { number: '02', title: 'Reverse engineering', text: 'Our researchers trace sensitive flows and decode the decisions your app makes under the hood.' },
+  { number: '03', title: 'Dynamic testing', text: 'Real devices. Real traffic. Real abuse cases. We test what your users and attackers can actually reach.' },
+]
+
+const plans = [
+  { name: 'Signal', price: '$4.9k', note: 'For focused validation', items: ['One iOS or Android app', '5-day assessment', 'Executive readout', 'Prioritized findings'], featured: false },
+  { name: 'Deep dive', price: '$9.8k', note: 'For production releases', items: ['iOS + Android scope', '10-day assessment', 'Full technical report', 'Retest included'], featured: true },
+  { name: 'Continuum', price: 'Custom', note: 'For teams shipping often', items: ['Quarterly assessments', 'Release gate support', 'Dedicated researcher', 'Live remediation room'], featured: false },
+]
+
+export default function Page() {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+
+  function submitAudit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setSubmitted(true)
+  }
+
+  return (
+    <main className="site-shell">
+      <header className="topbar">
+        <a className="brand" href="#top" aria-label="oxdroid home"><span className="brand-mark">ox</span>droid<span className="brand-dot">.</span></a>
+        <nav className={menuOpen ? 'nav-links nav-open' : 'nav-links'} aria-label="Main navigation">
+          <a href="#approach" onClick={() => setMenuOpen(false)}>Approach</a>
+          <a href="#scope" onClick={() => setMenuOpen(false)}>What we test</a>
+          <a href="#pricing" onClick={() => setMenuOpen(false)}>Pricing</a>
+          <a href="/blogs" onClick={() => setMenuOpen(false)}>Notes from the lab</a>
+        </nav>
+        <button className="nav-cta" onClick={() => setModalOpen(true)}>Request an audit <span>↗</span></button>
+        <button className="menu-button" aria-label="Toggle navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? '×' : '☰'}</button>
+      </header>
+
+      <section className="hero grid-bg" id="top">
+        <div className="hero-copy">
+          <p className="eyebrow"><span className="status-dot" /> Mobile security for what&apos;s next.</p>
+          <h1>Find what your mobile app<br /><em>is missing.</em></h1>
+          <p className="hero-lede">oxdroid is the independent security lab for mobile teams. We turn complex iOS and Android apps into clear, fixable decisions.</p>
+          <div className="hero-actions"><button className="button button-lime" onClick={() => setModalOpen(true)}>Start a conversation <span>↗</span></button><a className="text-link" href="#approach">Explore our approach <span>↓</span></a></div>
+        </div>
+        <div className="hero-diagram ascii-mascot" aria-label="Animated ASCII art of the oxdroid mascot" role="img">
+          <div className="diagram-label">OX / 2026 // FIELD_NOTE_01</div>
+          <pre className="mascot-art" aria-hidden="true">{`@@@@@%@@@@%%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%@@@@@@@@@@@@@@@@@@@@@@@@@@%@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%@@@@@@@@@%@@@@@@@@@@@@@@@@@@@%@@%#***#%%@@@@@@@@@@@%@@@@@@@@@@@@@@@
+%@@@@@@@@@@@@@@@@@@@%@@@%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#-      .-%@@@@@@@@@@@@@@@@@@@@@@@@@@
+%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%@@@@@@@@@@@@@@@@@@@@@%@@%@@@@@#: .:::::.  %@@@@@@@@@%@@@@@@@@@@@@@@%
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%%@@@@%- .:::::.  *@@@@@@@@@@@@@@@@@%@@@%@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%@@@%@@@@@@@@@@@@@@@@@@@%=     .   +%@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@%@@@@%@@@%%+-:................................. ..     ..:::...::-=#%%@@@%@@@@@@@@@@
+@@@%@@@@@@@@@@@@@@@@%#=.  ...:::::::::::::::::::..            ..  .:::::::::::::..   :*%@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@%*.  -+#################*=-:.      .......      ..-=+*##########**=. .=%@@%@@@@@%
+@@@@@@@@@@@@@@@@@%-  -################*-.    :=##%%%%%%%%%%%%%%%%#+-.    :+###########*. :#%@@@@@@@
+@@@@@@@@@@@%@@@@%-  *####*****####*+:  .:+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*-.  .-*########*- .#@@@@@@@
+@@@@@@@@@@@@@@@%+  +#####*****##*:  .=#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*-  .=*######*: -%@@@@@@
+@@@@@@@@@@%@@@@%- .*##########+.  -#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*.  -*#####=  %@@@@@@
+@@@@@@@@@@@@@@%%- .*########*:  =%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#:  -*###=  %@@@@@@
+@@@@@@@@@@@@@@@%- .*#######-  -#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*:  =##=  %@@@@@@
+@@@@@@@@@@@@@@@%- .****##*. .*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%=  :*=  %@@@@@@
+@@@@@@@@@@%%##*+: .-====-.  =++++++**#%%%%%%%%%%%%%%%%%%%####%%%%%%%%%%%%%%%%%%%%%%%%#. :-  %@@@@@%
+@@@@@@@%%+:                            .=#%%%%%%%%%%#+:  .::=%%%%%%%%%%%%%%%%%%%%%%%%%%:    %@@@@@@
+@@@@@@@+   .::......:::::::::::::::::::   =%%%%%%%+.  =#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#:   %@@@@@%
+@@@@@%=  .::......      :::::::::::::::::  =%%%%%%=-%%#*=--=#%%@@%%%%%%%%%%%%%%%%%%%%%%%*.  %@@@@@@
+@@@@%*  .::............   :::::::::::::::.  *%%%%%%%+.        :*%@%%%%%%%%%%%%%%%%%%%%%%%=  %@@@@@@
+@@@@%-  ::...:....::::::   :::::::::::::::  *%%%%%%-  %%%-...   *%@%%%%%%%%%%%%%%%%%%%%%%*. +@@@@@@
+@@%@@:  ::...:....::::::.  :::::::::.:::::  +%%%%%*. :=*=::...  :%@%%%%%%%%%%%%%%%%%%%%%%%- .%@@%@@
+@@@@%-  ::...:....::::::   ::::::::::::::.  *%%%%%#: .:::::...  -%@%%%%%%%%%%%%%%%%%%%%%%%=  #@@@@@
+@@@@%*  .:....:.....:::.  :::::::::::::::.  *%%%%%%=  .......  .#%%%%%%%%%%%%%%%%%%%%%%%%%+. *@@@@@
+@@@@@@=  .:..........    :::::::::::::::.  +%%%%%%%%%:       .=%@@%%%%%%%%%%%%%%%%%%%%%%%%#. =%@@@@
+@@@@@@@+.  ............:::::::::::::::..  =#*+++*%%%%%%%*++*%%@%%%%%%%%%%%%%%%%%%%%%%%%%%%#. =@@@@@
+@@@@@@@%%*:                             =#%#=---*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: -@@@@@
+@@@%@@@@@@%@%#+-.  .  .:::::.   ::--=*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: -%@@@@
+@@@@@@@@@@@@@@@%-    :%%%%%%%*: -%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: -%@@@@
+@@@@@@@@@@%@@%@%-   .%%%%%%%%%- .%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: :%@@@@
+@@@@@@@@@@@@@@@%-   :%%%%%%%%*-.=%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: -%@@@@
+@@@@@@@@@@@@@@@%-   .%%%%%%%*+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: -%@@@@
+@@@@@@@@@@@@@@@%-   .%%%%%%%%%- .%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: :%@@@@
+@@@@@@@%@@@@@@@%-    *%%%%%*=*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#. =@@@@@
+@@@@@@@@@@@@@%@%- .. .*%%%%=+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*. +%@@@%
+@@@@@@@@@@@@@@%%- .+: .=%%*=+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%=  #@@@@@
+@@@@@@@@@@@@@@@%- .++=.  :-=*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%-  %@@@@@
+@@@@@@@@%@@@@@@%- .+++++:   =%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*. =@@@@@@
+@@@@@@@@@@@@@@@%- .+++++++  -%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%-  %@@@@@@
+@@@@@@@@@@@@@@@%- .+++++++. :%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#=.   ..:-==+++=-::.  =%%%%%%%%%%%*.  %@@@@@@
+@@@@@@@@@@@@@@@%- .+++++++=  =%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%+.  #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#:    %@%@@@@
+@@@@@@@@@@@@@@@%- .+++++*##- .*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#:    %@@@@@@
+@@@@@@@@@@@@@@@%=  +++++*##*: .*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*. .. .%@@@@@@
+@@@@@@@@@@@@@@@%*. :+++++*##*-  -#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#-  :=. +@@@@@@@
+@@@@@@@@@@@@@@@@%+. -+++++++++=.  -*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*-  .==. -%@@@@@@@
+@@@@%@@@@@@@@@@@@%*  .=+++++++++=:  .-*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#=.  :=+:  -%%@@@@@@@
+@@@@@@@@@@@@@@@@%%@%=   -++++++++++=   ::-+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%+.   -+=.  .#%@@@@%@@@@
+@@@@@@@@@@@@@@@@@@@@%%*:.   ........  .*+--:::::-==+*+********######%%%%%%%#:  .    .=%@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@%%#*+========.  *%%%##**++=:          -*####%%%%%%*: .==+*#%%@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@%@@@@@@@@@@@@@@%@@%=  .=#%%%%#=.  =%@@@@@%.  =#%%%%%%#:  -%@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@%@@@@@@@@@@@@@@@@@@@@%+:.      .:+%@@@@@%@@%#-.        .-#%@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@%@@@@@@@@@%@%@@@@@%%%####%%@%@@@@@@@@@@@%%%#****#%%@@@@@@@@@@@@@@@@%@@@@@@@@@@
+@@@%@@@@@@@@@@@@@@@@@@@@@@@@@@%%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%@@@@@@@@@@@%@@%@@%@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@%@@@@@@@@@%@@@@@@@@@@@@@@@@@@@@%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%@@@@@@@@@@@@@`}</pre>
+          <span className="ascii-callout callout-left">AUDIT / ACTIVE</span>
+          <span className="ascii-callout callout-right">ANDROID + IOS</span>
+          <div className="ascii-baseline"><span>REAL DEVICES / REAL TRAFFIC</span><span>01 / 04</span></div>
+        </div>
+        <div className="hero-meta"><span>Trusted by teams building<br />the next essential app.</span><span>Scroll to inspect <b>↓</b></span></div>
+      </section>
+
+      <section className="statement section-pad"><p className="section-kicker">Mobile security for what&apos;s next</p><h2>Your app is a <span>front door.</span><br />We check the locks.</h2><div className="statement-bottom"><p>Security isn&apos;t a checklist you complete once. We help you find what your mobile app is missing before attackers do.</p><span className="big-index">01—</span></div></section>
+
+      <section className="approach section-pad dark-section" id="approach"><div className="section-heading"><p className="section-kicker lime-text">How we work</p><h2>Evidence over<br /><span>assumptions.</span></h2><p className="heading-note">Every finding comes with a proof, a path, and a practical next step. No theater. No mystery.</p></div><div className="service-list">{services.map((service) => <article className="service-item" key={service.number}><span className="service-number">{service.number}</span><div><h3>{service.title}</h3><p>{service.text}</p></div><span className="arrow">↗</span></article>)}</div></section>
+
+      <section className="scope section-pad" id="scope"><div className="scope-intro"><p className="section-kicker">Built for mobile reality</p><h2>One audit.<br /><span>Clear signal.</span></h2><p>We map your app against OWASP MASVS and the Mobile Top 10, then go further where your product is unique.</p></div><div className="scope-grid"><div className="scope-card featured-scope"><span className="card-label">01 / COVERAGE</span><strong>iOS<br /><span>&</span> Android</strong><span className="card-line">Native, hybrid, and cross-platform</span></div><div className="scope-card"><span className="card-label">02 / OUTPUT</span><strong>Findings<br />that land.</strong><span className="card-line">Severity, evidence, reproduction, fix.</span></div><div className="scope-card scope-note"><span className="card-label">03 / STANDARD</span><strong>MASVS<br />ALIGNED</strong><span className="card-line">A rigorous baseline. Not a ceiling.</span></div></div></section>
+
+      <section className="pricing section-pad dark-section" id="pricing"><div className="pricing-top"><div><p className="section-kicker lime-text">Choose your depth</p><h2>Security that<br /><span>fits the sprint.</span></h2></div><p>Start small, go deep, or keep us in the room. Every engagement is tailored to your release and risk profile.</p></div><div className="plans">{plans.map((plan) => <article className={plan.featured ? 'plan plan-featured' : 'plan'} key={plan.name}><div className="plan-head"><span>{plan.name}</span>{plan.featured && <b>Most requested</b>}</div><strong>{plan.price}</strong><small>{plan.note}</small><ul>{plan.items.map((item) => <li key={item}>+ {item}</li>)}</ul><button className="plan-link" onClick={() => setModalOpen(true)}>Discuss scope <span>↗</span></button></article>)}</div></section>
+
+      <footer className="footer"><div className="footer-brand"><a className="brand" href="#top"><span className="brand-mark">ox</span>droid<span className="brand-dot">.</span></a><p>Mobile security for<br />what&apos;s next.</p></div><div className="footer-links"><div><span>Explore</span><a href="#approach">Approach</a><a href="#scope">Scope</a><a href="#pricing">Pricing</a><a href="/blogs">Journal</a></div><div><span>Say hello</span><a href="mailto:hello@oxdroid.security">hello@oxdroid.security</a><a href="https://github.com/oxdroid" target="_blank" rel="noreferrer">GitHub ↗</a><a href="https://www.linkedin.com/company/oxdroid" target="_blank" rel="noreferrer">LinkedIn ↗</a><a href="https://twitter.com/oxdroid" target="_blank" rel="noreferrer">Twitter ↗</a></div></div><div className="footer-bottom"><span>© 2026 oxdroid security lab</span><span>Built for the brave.</span></div></footer>
+
+      {modalOpen && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setModalOpen(false) }}><div className="audit-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" aria-label="Close request form" onClick={() => setModalOpen(false)}>×</button>{submitted ? <div className="success-state"><span className="success-mark">✓</span><p className="section-kicker lime-text">Message received</p><h2>Let&apos;s make<br />it <span>harder.</span></h2><p>We&apos;ll be in touch shortly to understand your app, your release, and where you need signal most.</p><button className="button button-lime" onClick={() => { setModalOpen(false); setSubmitted(false) }}>Back to site</button></div> : <><p className="section-kicker lime-text">Start a conversation</p><h2 id="modal-title">Request an<br /><span>audit.</span></h2><form onSubmit={submitAudit}><label>Name<input required name="name" placeholder="Your name" /></label><label>Work email<input required type="email" name="email" placeholder="you@company.com" /></label><label>Tell us about the app<textarea required name="message" placeholder="What are you building?" rows={3} /></label><button className="button button-lime" type="submit">Send request <span>↗</span></button></form></>}</div></div>}
+    </main>
+  )
+}
