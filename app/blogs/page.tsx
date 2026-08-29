@@ -29,7 +29,10 @@ export default function BlogsPage() {
   return (
     <main className="site-shell">
       <header className="topbar">
-        <a className="brand" href="/" aria-label="oxdroid home"><span className="brand-mark">ox</span>droid<span className="brand-dot">.</span></a>
+        <a className="brand" href="/" aria-label="oxdroid home" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+          <img src="/apple-icon.png" alt="oxdroid mascot" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+          <span><span className="brand-mark">ox</span>droid<span className="brand-dot">.</span></span>
+        </a>
         <nav className="nav-links" aria-label="Main navigation">
           <a href="/#approach">Approach</a>
           <a href="/#scope">What we test</a>
