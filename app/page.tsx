@@ -3,9 +3,9 @@
 import { useState } from 'react'
 
 const services = [
-  { number: '01', title: 'Static analysis', text: 'We inspect binaries, source, dependencies, and configurations for weaknesses before they reach production.' },
-  { number: '02', title: 'Reverse engineering', text: 'Our researchers trace sensitive flows and decode the decisions your app makes under the hood.' },
-  { number: '03', title: 'Dynamic testing', text: 'Real devices. Real traffic. Real abuse cases. We test what your users and attackers can actually reach.' },
+  { number: '01', title: 'Static analysis', text: 'The engine decompiles the app and scans binaries, bundles, dependencies, and configuration for weaknesses before they reach production.' },
+  { number: '02', title: 'Chain synthesis', text: 'It does not stop at one issue. oxdroid chains primitives toward the highest impact, from token theft to account takeover to code execution.' },
+  { number: '03', title: 'Dynamic proof', text: 'Real devices. Real traffic. Real abuse cases. Every dynamic finding is reproduced on a live device and captured as evidence.' },
 ]
 
 const plans = [
@@ -144,9 +144,9 @@ export default function Page() {
 
       <section className="hero grid-bg" id="top">
         <div className="hero-copy">
-          <p className="eyebrow"><span className="status-dot" /> Mobile security for what&apos;s next.</p>
+          <p className="eyebrow"><span className="status-dot" /> Autonomous mobile app security.</p>
           <h1>Find what your mobile app<br /><em>is missing.</em></h1>
-          <p className="hero-lede">oxdroid is the independent security lab for mobile teams. We turn complex iOS and Android apps into clear, fixable decisions.</p>
+          <p className="hero-lede">oxdroid is the autonomous security platform for mobile teams. Our AI engine tests iOS and Android apps end to end, static and dynamic, and returns findings backed by reproducible proof.</p>
           <div className="hero-actions"><button className="button button-lime" onClick={openModal}>Start a conversation <span>↗</span></button><a className="text-link" href="#approach">Explore our approach <span>↓</span></a></div>
         </div>
         <div className="hero-diagram ascii-mascot" aria-label="Animated ASCII art of the oxdroid mascot" role="img">
@@ -214,11 +214,11 @@ export default function Page() {
         <div className="hero-meta"><span>Trusted by teams building<br />the next essential app.</span><span>Scroll to inspect <b>↓</b></span></div>
       </section>
 
-      <section className="statement section-pad"><p className="section-kicker">Mobile security for what&apos;s next</p><h2>Your app is a <span>front door.</span><br />We check the locks.</h2><div className="statement-bottom"><p>Security isn&apos;t a checklist you complete once. We help you find what your mobile app is missing before attackers do.</p><span className="big-index">01—</span></div></section>
+      <section className="statement section-pad"><p className="section-kicker">Autonomous by design</p><h2>The depth of a researcher.<br /><span>The speed of a machine.</span></h2><div className="statement-bottom"><p>Manual audits do not scale, so most apps get tested once a quarter, if that. oxdroid runs the full assessment autonomously and a researcher reviews the proof, so you get expert depth on every release.</p><span className="big-index">01.</span></div></section>
 
       <section className="approach section-pad dark-section" id="approach"><div className="section-heading"><p className="section-kicker lime-text">How we work</p><h2>Evidence over<br /><span>assumptions.</span></h2><p className="heading-note">Every finding comes with a proof, a path, and a practical next step. No theater. No mystery.</p></div><div className="service-list">{services.map((service) => <article className="service-item" key={service.number}><span className="service-number">{service.number}</span><div><h3>{service.title}</h3><p>{service.text}</p></div><span className="arrow">↗</span></article>)}</div></section>
 
-      <section className="scope section-pad" id="scope"><div className="scope-intro"><p className="section-kicker">Built for mobile reality</p><h2>One audit.<br /><span>Clear signal.</span></h2><p>We map your app against OWASP MASVS and the Mobile Top 10, then go further where your product is unique.</p></div><div className="scope-grid"><div className="scope-card featured-scope"><span className="card-label">01 / COVERAGE</span><strong>iOS<br /><span>&</span> Android</strong><span className="card-line">Native, hybrid, and cross-platform</span></div><div className="scope-card"><span className="card-label">02 / OUTPUT</span><strong>Findings<br />that land.</strong><span className="card-line">Severity, evidence, reproduction, fix.</span></div><div className="scope-card scope-note"><span className="card-label">03 / STANDARD</span><strong>MASVS<br />ALIGNED</strong><span className="card-line">A rigorous baseline. Not a ceiling.</span></div></div></section>
+      <section className="scope section-pad" id="scope"><div className="scope-intro"><p className="section-kicker">Built for mobile reality</p><h2>One audit.<br /><span>Clear signal.</span></h2><p>The autonomous engine maps your app against OWASP MASVS and the Mobile Top 10, then chains findings toward real impact. On a known ground-truth benchmark it found 18 of 18 planted issues.</p></div><div className="scope-grid"><div className="scope-card featured-scope"><span className="card-label">01 / COVERAGE</span><strong>iOS<br /><span>&</span> Android</strong><span className="card-line">Native, hybrid, and cross-platform</span></div><div className="scope-card"><span className="card-label">02 / OUTPUT</span><strong>Findings<br />that land.</strong><span className="card-line">Severity, evidence, reproduction, fix.</span></div><div className="scope-card scope-note"><span className="card-label">03 / STANDARD</span><strong>MASVS<br />ALIGNED</strong><span className="card-line">A rigorous baseline. Not a ceiling.</span></div></div></section>
 
       <section className="pricing section-pad dark-section" id="pricing"><div className="pricing-top"><div><p className="section-kicker lime-text">Choose your depth</p><h2>Security that<br /><span>fits the sprint.</span></h2></div><p>Start small, go deep, or keep us in the room. Every engagement is tailored to your release and risk profile.</p></div><div className="plans">{plans.map((plan) => <article className={plan.featured ? 'plan plan-featured' : 'plan'} key={plan.name}><div className="plan-head"><span>{plan.name}</span>{plan.featured && <b>Most requested</b>}</div><strong>{plan.price}</strong><small>{plan.note}</small><ul>{plan.items.map((item) => <li key={item}>+ {item}</li>)}</ul><button className="plan-link" onClick={openModal}>Discuss scope <span>↗</span></button></article>)}</div></section>
 
