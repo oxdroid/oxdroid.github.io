@@ -206,7 +206,7 @@ export default function Page() {
         <div className="hero-copy">
           <p className="eyebrow"><span className="status-dot" /> Autonomous mobile app security.</p>
           <h1>Find what your mobile app<br /><em>is missing.</em></h1>
-          <p className="hero-lede">oxdroid is the autonomous security platform for mobile teams. Our AI engine tests iOS and Android apps end to end, static and dynamic, and returns findings backed by reproducible proof.</p>
+          <p className="hero-lede">oxdroid is the autonomous security platform for mobile teams. Our engine tests iOS and Android apps end to end, static and dynamic, and returns findings backed by reproducible proof.</p>
           <div className="hero-actions"><button className="button button-lime" onClick={openModal}>Start a conversation <span>↗</span></button><a className="text-link" href="#approach">Explore our approach <span>↓</span></a></div>
           <div className="hero-proof">
             <div className="proof-cell"><b>18/18</b><span>planted issues found on our ground-truth benchmark</span></div>
