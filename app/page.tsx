@@ -8,12 +8,6 @@ const services = [
   { number: '03', title: 'Dynamic proof', text: 'Real devices. Real traffic. Real abuse cases. Every dynamic finding is reproduced on a live device and captured as evidence.' },
 ]
 
-const plans = [
-  { name: 'Signal', price: '$4.9k', note: 'For focused validation', items: ['One iOS or Android app', '5-day assessment', 'Executive readout', 'Prioritized findings'], featured: false },
-  { name: 'Deep dive', price: '$9.8k', note: 'For production releases', items: ['iOS + Android scope', '10-day assessment', 'Full technical report', 'Retest included'], featured: true },
-  { name: 'Continuum', price: 'Custom', note: 'For teams shipping often', items: ['Quarterly assessments', 'Release gate support', 'Dedicated researcher', 'Live remediation room'], featured: false },
-]
-
 // ─── Rate-limit helpers (client-side, localStorage) ─────────────────────────
 const RATE_LIMIT_KEY = 'oxd_form_submissions'
 const RATE_LIMIT_MAX = 3          // max submissions
@@ -50,6 +44,11 @@ export default function Page() {
   const [formError, setFormError] = useState('')
   // Timestamp set when modal opens — used to detect instant (bot) submissions
   const [formOpenedAt, setFormOpenedAt] = useState<number>(0)
+  // ── Early-access waitlist state ────────────────────────────────────────────
+  const [waitLoading, setWaitLoading] = useState(false)
+  const [waitDone, setWaitDone] = useState(false)
+  const [waitError, setWaitError] = useState('')
+  const [waitOpenedAt, setWaitOpenedAt] = useState<number>(0)
 
   function openModal() {
     setFormOpenedAt(Date.now())
@@ -125,6 +124,67 @@ export default function Page() {
     }
   }
 
+  // ── Early-access waitlist: email-only, lands in the same portal inbox ──────
+  async function submitWaitlist(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setWaitError('')
+
+    const form = event.currentTarget
+    const formData = new FormData(form)
+
+    // Honeypot — bots fill hidden fields, humans don't
+    const honeypot = formData.get('_honey') as string
+    if (honeypot && honeypot.trim() !== '') {
+      setWaitDone(true)
+      return
+    }
+
+    // Timing gate — reject instant (bot) submissions
+    if (!waitOpenedAt || Date.now() - waitOpenedAt < 3000) {
+      setWaitError('One moment — type your email, then send.')
+      return
+    }
+
+    // Shared client-side rate limit with the audit form
+    if (isRateLimited()) {
+      setWaitError('Too many requests. Please try again in an hour, or email support@oxdroid.io.')
+      return
+    }
+
+    setWaitLoading(true)
+    const email = formData.get('email')
+
+    try {
+      const res = await fetch('https://formsubmit.co/ajax/support@oxdroid.io', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          _subject: 'Early Access waitlist signup',
+          _template: 'table',
+          _captcha: 'false',
+          _honey: '',
+        }),
+      })
+
+      if (res.ok) {
+        recordSubmission()
+        setWaitDone(true)
+      } else {
+        throw new Error('submit failed')
+      }
+    } catch {
+      // Honest fallback: hand the signup to the visitor's mail client
+      window.location.href = `mailto:support@oxdroid.io?subject=Early%20Access%20waitlist&body=Email: ${encodeURIComponent(String(email))}`
+      setWaitDone(true)
+    } finally {
+      setWaitLoading(false)
+    }
+  }
+
   return (
     <main className="site-shell">
       <header className="topbar">
@@ -135,7 +195,7 @@ export default function Page() {
         <nav className={menuOpen ? 'nav-links nav-open' : 'nav-links'} aria-label="Main navigation">
           <a href="#approach" onClick={() => setMenuOpen(false)}>Approach</a>
           <a href="#scope" onClick={() => setMenuOpen(false)}>What we test</a>
-          <a href="#pricing" onClick={() => setMenuOpen(false)}>Pricing</a>
+          <a href="#early-access" onClick={() => setMenuOpen(false)}>Early access</a>
           <a href="/blogs" onClick={() => setMenuOpen(false)}>Notes from the lab</a>
         </nav>
         <button className="nav-cta" onClick={openModal}>Request an audit <span>↗</span></button>
@@ -220,9 +280,9 @@ export default function Page() {
 
       <section className="scope section-pad" id="scope"><div className="scope-intro"><p className="section-kicker">Built for mobile reality</p><h2>One audit.<br /><span>Clear signal.</span></h2><p>The autonomous engine maps your app against OWASP MASVS and the Mobile Top 10, then chains findings toward real impact. On a known ground-truth benchmark it found 18 of 18 planted issues.</p></div><div className="scope-grid"><div className="scope-card featured-scope"><span className="card-label">01 / COVERAGE</span><strong>iOS<br /><span>&</span> Android</strong><span className="card-line">Native, hybrid, and cross-platform</span></div><div className="scope-card"><span className="card-label">02 / OUTPUT</span><strong>Findings<br />that land.</strong><span className="card-line">Severity, evidence, reproduction, fix.</span></div><div className="scope-card scope-note"><span className="card-label">03 / STANDARD</span><strong>MASVS<br />ALIGNED</strong><span className="card-line">A rigorous baseline. Not a ceiling.</span></div></div></section>
 
-      <section className="pricing section-pad dark-section" id="pricing"><div className="pricing-top"><div><p className="section-kicker lime-text">Choose your depth</p><h2>Security that<br /><span>fits the sprint.</span></h2></div><p>Start small, go deep, or keep us in the room. Every engagement is tailored to your release and risk profile.</p></div><div className="plans">{plans.map((plan) => <article className={plan.featured ? 'plan plan-featured' : 'plan'} key={plan.name}><div className="plan-head"><span>{plan.name}</span>{plan.featured && <b>Most requested</b>}</div><strong>{plan.price}</strong><small>{plan.note}</small><ul>{plan.items.map((item) => <li key={item}>+ {item}</li>)}</ul><button className="plan-link" onClick={openModal}>Discuss scope <span>↗</span></button></article>)}</div></section>
+      <section className="early-access section-pad dark-section" id="early-access"><div className="section-heading"><p className="section-kicker lime-text">Early access</p><h2>Funded, and<br /><span>onboarding now.</span></h2><p className="heading-note">We are bringing a small group of mobile teams onto the platform this quarter. Leave your work email and we will reach out with an onboarding slot, a live demo on your own app, and the write-up from our latest benchmark run.</p></div>{waitDone ? <p className="waitlist-done"><span className="success-mark">✓</span> You are on the list. We will reach out shortly — nothing else will land in your inbox.</p> : <form className="waitlist-form" onSubmit={submitWaitlist}><input type="text" name="_honey" defaultValue="" aria-hidden="true" tabIndex={-1} autoComplete="off" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} /><label className="sr-only" htmlFor="waitlist-email">Work email</label><input id="waitlist-email" required type="email" name="email" placeholder="you@company.com" onFocus={() => { if (!waitOpenedAt) setWaitOpenedAt(Date.now()) }} /><button className="button button-lime" type="submit" disabled={waitLoading}>{waitLoading ? 'Joining…' : <>Request early access <span>↗</span></>}</button></form>}{waitError && <p role="alert" className="waitlist-error">{waitError}</p>}<p className="heading-note" style={{ marginTop: '14px' }}>No spam. One email to schedule your slot — that is the whole campaign.</p></section>
 
-      <footer className="footer"><div className="footer-brand"><a className="brand" href="#top"><span className="brand-mark">ox</span>droid<span className="brand-dot">.</span></a><p>Mobile security for<br />what&apos;s next.</p></div><div className="footer-links"><div><span>Explore</span><a href="#approach">Approach</a><a href="#scope">Scope</a><a href="#pricing">Pricing</a><a href="/blogs">Journal</a></div><div><span>Say hello</span><a href="mailto:support@oxdroid.io">support@oxdroid.io</a><a href="https://github.com/oxdroid" target="_blank" rel="noreferrer">GitHub ↗</a><a href="https://www.linkedin.com/company/oxdroid" target="_blank" rel="noreferrer">LinkedIn ↗</a><a href="https://twitter.com/oxdroid" target="_blank" rel="noreferrer">Twitter ↗</a></div></div><div className="footer-bottom"><span>© 2026 oxdroid security lab</span><span>Built for the brave.</span></div></footer>
+      <footer className="footer"><div className="footer-brand"><a className="brand" href="#top"><span className="brand-mark">ox</span>droid<span className="brand-dot">.</span></a><p>Mobile security for<br />what&apos;s next.</p></div><div className="footer-links"><div><span>Explore</span><a href="#approach">Approach</a><a href="#scope">Scope</a><a href="#early-access">Early access</a><a href="/privacy">Privacy policy</a><a href="/blogs">Journal</a></div><div><span>Say hello</span><a href="mailto:support@oxdroid.io">support@oxdroid.io</a><a href="https://github.com/oxdroid" target="_blank" rel="noreferrer">GitHub ↗</a><a href="https://www.linkedin.com/company/oxdroid" target="_blank" rel="noreferrer">LinkedIn ↗</a><a href="https://twitter.com/oxdroid" target="_blank" rel="noreferrer">Twitter ↗</a></div></div><div className="footer-bottom"><span>© 2026 oxdroid security lab</span><span>Built for the brave.</span></div></footer>
 
       {modalOpen && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) { setModalOpen(false); setFormError('') } }}><div className="audit-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" aria-label="Close request form" onClick={() => { setModalOpen(false); setFormError('') }}>×</button>{submitted ? <div className="success-state"><span className="success-mark">✓</span><p className="section-kicker lime-text">Message received</p><h2>Let&apos;s make<br />it <span>harder.</span></h2><p>We&apos;ll be in touch shortly to understand your app, your release, and where you need signal most.</p><button className="button button-lime" onClick={() => { setModalOpen(false); setSubmitted(false); setFormError('') }}>Back to site</button></div> : <><p className="section-kicker lime-text">Start a conversation</p><h2 id="modal-title">Request an<br /><span>audit.</span></h2><form onSubmit={submitAudit}>{/* Honeypot — hidden from humans, bots fill it automatically */}<input type="text" name="_honey" defaultValue="" aria-hidden="true" tabIndex={-1} autoComplete="off" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} /><label>Name<input required name="name" placeholder="Your name" /></label><label>Work email<input required type="email" name="email" placeholder="you@company.com" /></label><label>Tell us about the app<textarea required name="message" placeholder="What are you building?" rows={3} /></label>{formError && <p role="alert" style={{ color: '#c0392b', fontFamily: 'var(--font-mono)', fontSize: '11px', margin: '0', lineHeight: '1.5' }}>{formError}</p>}<button className="button button-lime" type="submit" disabled={loading}>{loading ? 'Sending request...' : <>Send request <span>↗</span></>}</button></form></>}</div></div>}
     </main>
