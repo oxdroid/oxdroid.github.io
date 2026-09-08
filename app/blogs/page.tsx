@@ -36,10 +36,10 @@ export default function BlogsPage() {
         <nav className="nav-links" aria-label="Main navigation">
           <a href="/#approach">Approach</a>
           <a href="/#scope">What we test</a>
-          <a href="/#pricing">Pricing</a>
+          <a href="/#early-access">Early access</a>
           <a href="/blogs" aria-current="page">Notes from the lab</a>
         </nav>
-        <a className="nav-cta" href="/#top">Request an audit <span>↗</span></a>
+        <a className="nav-cta" href="/#early-access">Request early access <span>↗</span></a>
       </header>
 
       <section className="blog-hero grid-bg">
@@ -116,7 +116,9 @@ export default function BlogsPage() {
             <span>Explore</span>
             <a href="/#approach">Approach</a>
             <a href="/#scope">Scope</a>
-            <a href="/#pricing">Pricing</a>
+            <a href="/#early-access">Early access</a>
+            <a href="/privacy">Privacy policy</a>
+            <a href="/blogs">Journal</a>
           </div>
           <div>
             <span>Say hello</span>

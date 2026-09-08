@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | oxdroid',
-  description: 'How oxdroid collects, uses, protects, and retains personal data — aligned with ISO/IEC 27001:2022 and ISO/IEC 27701 privacy information management principles.',
+  description: 'How oxdroid collects, uses, protects, and retains personal data, aligned with ISO/IEC 27001:2022 and ISO/IEC 27701 privacy information management principles.',
 }
 
 const updated = 'September 8, 2026'
@@ -17,7 +17,7 @@ const sections: { title: string; body: string[] }[] = [
   {
     title: '2. Our privacy and security commitments',
     body: [
-      'Our security management practices are aligned with ISO/IEC 27001:2022 (information security management) and we manage personal data in line with the privacy principles of ISO/IEC 27701 — purpose limitation, data minimisation, transparency, and accountability. Where we process personal data of individuals in the EU/UK, we do so in accordance with the UK/EU General Data Protection Regulation (GDPR).',
+      'Our security management practices are aligned with ISO/IEC 27001:2022 (information security management) and we manage personal data in line with the privacy principles of ISO/IEC 27701: purpose limitation, data minimisation, transparency, and accountability. Where we process personal data of individuals in the EU/UK, we do so in accordance with the UK/EU General Data Protection Regulation (GDPR).',
       'In plain terms: we collect as little as possible, we use it only for the purpose you gave it to us for, we say so plainly, and we protect it with the same controls we recommend to our customers.',
     ],
   },
@@ -33,9 +33,9 @@ const sections: { title: string; body: string[] }[] = [
   {
     title: '4. Why we use it (lawful basis)',
     body: [
-      'To respond to your audit request or early-access signup — performance of a contract or steps prior to it (GDPR Art. 6(1)(b)).',
-      'To operate and secure our website and services — our legitimate interests (Art. 6(1)(f)); request logs are kept by our hosting provider for abuse detection and availability.',
-      'To send you the onboarding email you asked for — consent (Art. 6(1)(a)). You can withdraw it at any time by emailing support@oxdroid.io; the only email the waitlist generates is the onboarding contact.',
+      'To respond to your audit request or early-access signup: performance of a contract or steps prior to it (GDPR Art. 6(1)(b)).',
+      'To operate and secure our website and services: our legitimate interests (Art. 6(1)(f)). Request logs are kept by our hosting provider for abuse detection and availability.',
+      'To send you the onboarding email you asked for: consent (Art. 6(1)(a)). You can withdraw it at any time by emailing support@oxdroid.io; the only email the waitlist generates is the onboarding contact.',
     ],
   },
   {
@@ -69,7 +69,7 @@ const sections: { title: string; body: string[] }[] = [
     title: '9. Security controls',
     body: [
       'We apply controls consistent with ISO/IEC 27001 Annex A practices to the systems we operate: least-privilege access with multi-factor authentication on code, mail, and infrastructure accounts; encrypted transport (TLS) for this website and all APIs; container isolation and capability dropping in the product; secrets separation (customer keys never leave customer deployments); and audit logging of administrative actions.',
-      'No system is perfectly secure. If you believe you have found a vulnerability in anything we operate, email support@oxdroid.io with details — we will acknowledge within 5 business days and will not pursue legal action for good-faith research.',
+      'No system is perfectly secure. If you believe you have found a vulnerability in anything we operate, email support@oxdroid.io with details. We will acknowledge within 5 business days and will not pursue legal action for good-faith research.',
     ],
   },
   {
@@ -109,22 +109,30 @@ export default function PrivacyPage() {
         <a className="nav-cta" href="/#early-access">Request early access <span>↗</span></a>
       </header>
 
-      <section className="statement section-pad" style={{ padding: '48px 10vw 10px' }}>
-        <p className="section-kicker">Legal</p>
-        <h1 style={{ fontSize: 'clamp(30px, 5vw, 52px)', lineHeight: 1.1, margin: '0 0 10px' }}>
-          Privacy <span>policy.</span>
-        </h1>
-        <p className="heading-note">Last updated {updated}. Written to be read, not to hide behind.</p>
-      </section>
-
-      <section className="legal section-pad" style={{ paddingTop: '0' }}>
-        {sections.map((s) => (
-          <article key={s.title} className="legal-item">
-            <h2>{s.title}</h2>
-            {s.body.map((p, i) => <p key={i}>{p}</p>)}
-          </article>
-        ))}
-        <p className="legal-contact">Questions about anything above? <a href="mailto:support@oxdroid.io">support@oxdroid.io</a></p>
+      <section className="legal-wrap section-pad">
+        <aside className="legal-aside">
+          <p className="section-kicker">Legal</p>
+          <h1 className="legal-title">Privacy <span>policy.</span></h1>
+          <p className="heading-note">Last updated {updated}.<br />Written to be read, not to hide behind.</p>
+          <nav className="legal-toc" aria-label="Sections">
+            {sections.map((s) => {
+              const id = s.title.split('.')[0].trim()
+              return <a key={s.title} href={`#s-${id}`}>{s.title}</a>
+            })}
+          </nav>
+        </aside>
+        <div className="legal-body">
+          {sections.map((s) => {
+            const id = s.title.split('.')[0].trim()
+            return (
+              <article key={s.title} id={`s-${id}`} className="legal-item">
+                <h2>{s.title}</h2>
+                {s.body.map((p, i) => <p key={i}>{p}</p>)}
+              </article>
+            )
+          })}
+          <p className="legal-contact">Questions about anything above? <a href="mailto:support@oxdroid.io">support@oxdroid.io</a></p>
+        </div>
       </section>
 
       <footer className="footer"><div className="footer-brand"><a className="brand" href="/"><span className="brand-mark">ox</span>droid<span className="brand-dot">.</span></a><p>Mobile security for<br />what&apos;s next.</p></div><div className="footer-links"><div><span>Explore</span><a href="/#approach">Approach</a><a href="/#scope">Scope</a><a href="/#early-access">Early access</a><a href="/privacy">Privacy policy</a><a href="/blogs">Journal</a></div><div><span>Say hello</span><a href="mailto:support@oxdroid.io">support@oxdroid.io</a><a href="https://github.com/oxdroid" target="_blank" rel="noreferrer">GitHub ↗</a><a href="https://www.linkedin.com/company/oxdroid" target="_blank" rel="noreferrer">LinkedIn ↗</a><a href="https://twitter.com/oxdroid" target="_blank" rel="noreferrer">Twitter ↗</a></div></div><div className="footer-bottom"><span>© 2026 oxdroid security lab</span><span>Built for the brave.</span></div></footer>

