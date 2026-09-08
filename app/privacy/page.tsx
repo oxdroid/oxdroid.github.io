@@ -109,7 +109,7 @@ export default function PrivacyPage() {
         <a className="nav-cta" href="/#early-access">Request early access <span>↗</span></a>
       </header>
 
-      <section className="statement section-pad" style={{ paddingTop: '48px' }}>
+      <section className="statement section-pad" style={{ padding: '48px 10vw 10px' }}>
         <p className="section-kicker">Legal</p>
         <h1 style={{ fontSize: 'clamp(30px, 5vw, 52px)', lineHeight: 1.1, margin: '0 0 10px' }}>
           Privacy <span>policy.</span>

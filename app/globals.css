@@ -266,3 +266,9 @@ a { color:inherit; text-decoration:none; }
 .fc-evidence code { color:#3d3f3a; }
 .fc-chain { color:var(--ink); background:var(--paper); font-weight:700; }
 .fc-foot, .fc-id, .fc-tag { color:#62645e; }
+
+/* waitlist form contrast + polish */
+.waitlist-form input[type="email"] { color: var(--ink); }
+.waitlist-form input[type="email"]::placeholder { color:#8a8c85; }
+.waitlist-meta span { font:11px var(--font-mono); color:#8a8c85; letter-spacing:.02em; text-transform:none; }
+.early-access .section-heading h2 { font-size:clamp(30px,4vw,58px); letter-spacing:-.04em; }

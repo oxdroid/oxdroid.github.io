@@ -202,7 +202,7 @@ export default function Page() {
         <button className="menu-button" aria-label="Toggle navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? '×' : '☰'}</button>
       </header>
 
-      <section className="hero grid-bg" id="top">
+      <section className="hero" id="top">
         <div className="hero-copy">
           <p className="eyebrow"><span className="status-dot" /> Autonomous mobile app security.</p>
           <h1>Find what your mobile app<br /><em>is missing.</em></h1>
@@ -297,8 +297,8 @@ export default function Page() {
 
       <section className="scope section-pad" id="scope"><div className="scope-intro"><p className="section-kicker">Built for mobile reality</p><h2>One audit.<br /><span>Clear signal.</span></h2><p>The autonomous engine maps your app against OWASP MASVS and the Mobile Top 10, then chains findings toward real impact. On a known ground-truth benchmark it found 18 of 18 planted issues.</p></div><div className="scope-grid"><div className="scope-card featured-scope"><span className="card-label">01 / COVERAGE</span><strong>iOS<br /><span>&</span> Android</strong><span className="card-line">Native, hybrid, and cross-platform</span></div><div className="scope-card"><span className="card-label">02 / OUTPUT</span><strong>Findings<br />that land.</strong><span className="card-line">Severity, evidence, reproduction, fix.</span></div><div className="scope-card scope-note"><span className="card-label">03 / STANDARD</span><strong>MASVS<br />ALIGNED</strong><span className="card-line">A rigorous baseline. Not a ceiling.</span></div></div></section>
 
-      <section className="early-access section-pad dark-section grid-bg" id="early-access">
-        <div className="section-heading"><p className="section-kicker lime-text">Early access // cohort 01</p><h2>The engine is running.<br /><span>Get your app in front of it.</span></h2><p className="heading-note">We onboard a handful of mobile teams at a time — engineer-to-engineer. You bring a release candidate; the engine brings the adversarial hours; a researcher signs off every finding before it reaches you.</p></div>
+      <section className="early-access section-pad dark-section" id="early-access">
+        <div className="section-heading"><p className="section-kicker lime-text">Early access — cohort 01</p><h2>The engine is running.<br /><span>Get your app in front of it.</span></h2><p className="heading-note">We onboard a handful of mobile teams at a time — engineer-to-engineer. You bring a release candidate; the engine brings the adversarial hours; a researcher signs off every finding before it reaches you.</p></div>
         <div className="waitlist-panel">
           {waitDone ? (
             <div className="waitlist-done"><span className="success-mark">✓</span><div><b>You&apos;re on the list.</b><span>We&apos;ll reach out with an onboarding slot — one email, nothing else.</span></div></div>
@@ -311,7 +311,7 @@ export default function Page() {
               {waitError && <p role="alert" className="waitlist-error">{waitError}</p>}
             </form>
           )}
-          <div className="waitlist-meta"><span>// one email to schedule a slot</span><span>// live demo on your own build</span><span>// benchmark write-up included</span></div>
+          <div className="waitlist-meta"><span>One email to schedule a slot — nothing else.</span><span>Live demo on your own build.</span><span>Latest benchmark write-up included.</span></div>
         </div>
       </section>
 
